@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"prumo/internal/agent"
 	"prumo/internal/api"
 	"prumo/internal/bridge"
 	"prumo/internal/debug"
@@ -106,6 +107,7 @@ func New(ctx context.Context, opt Options) (*api.Core, error) {
 		Terms:   term.NewManager(reg, bus),
 		Git:     gitx.New(reg, bus, find("git")),
 		Sdks:    sdk.New(db, finder),
+		Agent:   agent.NewRunner(),
 		Dev:     opt.Dev,
 	}
 	var rpc *bridge.Dispatcher

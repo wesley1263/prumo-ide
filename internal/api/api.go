@@ -17,6 +17,7 @@ import (
 	"strings"
 	"sync/atomic"
 
+	"prumo/internal/agent"
 	"prumo/internal/bridge"
 	"prumo/internal/debug"
 	"prumo/internal/events"
@@ -48,6 +49,7 @@ type Core struct {
 	Search  *search.Service
 	Terms   *term.Manager
 	Bridge  *bridge.Server
+	Agent   *agent.Runner // agente de IA para mensagens de commit
 	Dev     bool
 	// PickDir abre o seletor nativo de pasta. No modo dev não existe: a UI pede o caminho por texto.
 	PickDir func(title string) (string, error)
@@ -322,6 +324,52 @@ var settingRules = map[string]func(raw json.RawMessage) error{
 	},
 	"commit.vet":   isBool,
 	"commit.tests": isBool,
+	"commit.agent": func(raw json.RawMessage) error {
+		var v string
+		if json.Unmarshal(raw, &v) != nil {
+			return errors.New("agente deve ser texto")
+		}
+		switch v {
+		case "auto", "off", "custom", "claude", "codex", "gemini":
+			return nil
+		}
+		return fmt.Errorf("agente desconhecido: %s", v)
+	},
+	"commit.agentCommand": func(raw json.RawMessage) error {
+		var v string
+		if json.Unmarshal(raw, &v) != nil {
+			return errors.New("comando do agente deve ser texto")
+		}
+		if strings.TrimSpace(v) == "" {
+			return nil
+		}
+		parts, err := run.SplitArgs(v)
+		if err != nil || len(parts) == 0 {
+			return errors.New("comando do agente inválido: aspas sem fechar")
+		}
+		if _, err := agent.Resolve("custom", v, run.SplitArgs); err != nil {
+			return err
+		}
+		return nil
+	},
+	"commit.agentLanguage": func(raw json.RawMessage) error {
+		var v string
+		if json.Unmarshal(raw, &v) != nil || (v != "auto" && v != "pt-BR" && v != "en") {
+			return errors.New(`idioma da mensagem deve ser "auto", "pt-BR" ou "en"`)
+		}
+		return nil
+	},
+	"commit.agentInstructions": func(raw json.RawMessage) error {
+		var v string
+		if json.Unmarshal(raw, &v) != nil {
+			return errors.New("instruções devem ser texto")
+		}
+		if len(v) > 2000 {
+			return errors.New("instruções longas demais (máximo de 2000 caracteres)")
+		}
+		return nil
+	},
+	"commit.agentConsent": isBool,
 	"terminal.shell": func(raw json.RawMessage) error {
 		var v string
 		if json.Unmarshal(raw, &v) != nil {
@@ -393,6 +441,9 @@ type Tools struct{ c *Core }
 
 // Status localiza go, git, gopls, dlv e rg.
 func (t *Tools) Status() tools.Status { return t.c.Tools.Status(context.Background()) }
+
+// Agents lista os agentes de IA de linha de comando conhecidos e onde cada um está.
+func (t *Tools) Agents() []agent.Info { return agent.Detect() }
 
 // Install instala gopls ou dlv na versão fixada e devolve a saída do go install.
 func (t *Tools) Install(name string) (string, error) {
@@ -936,3 +987,53 @@ func (t *Terminal) Rename(termID, title string) error { return t.c.Terms.Rename(
 
 // Close encerra o shell e o que estiver rodando nele.
 func (t *Terminal) Close(termID string) error { return t.c.Terms.Close(termID) }
+
+// ---------------------------------------------------------------- mensagem de commit com IA
+
+// SuggestRequest: o que vai para o commit (os mesmos files e partial do Commit) e o idioma da interface.
+type SuggestRequest struct {
+	Files   []string          `json:"files"`
+	Partial map[string]string `json:"partial"`
+	UILang  string            `json:"uiLang"`
+}
+
+// SuggestResult é a mensagem e quem a escreveu.
+type SuggestResult struct {
+	Message string `json:"message"`
+	Agent   string `json:"agent"`
+}
+
+// SuggestCommitMessage pede a mensagem ao agente configurado (Configurações → Ferramentas), com o diff só do
+// que está marcado. Só roda quando o usuário clica; o diff vai para o provedor do agente.
+func (g *Git) SuggestCommitMessage(projectID string, req SuggestRequest) (SuggestResult, error) {
+	ctx := context.Background()
+	vals, _ := g.c.DB.GetSettings(ctx, []string{"commit.agent", "commit.agentCommand", "commit.agentLanguage", "commit.agentInstructions"})
+	str := func(k, def string) string {
+		var v string
+		if raw, ok := vals[k]; ok && json.Unmarshal(raw, &v) == nil && v != "" {
+			return v
+		}
+		return def
+	}
+	cmd, err := agent.Resolve(str("commit.agent", "auto"), str("commit.agentCommand", ""), run.SplitArgs)
+	if err != nil {
+		return SuggestResult{}, err
+	}
+	cc, err := g.c.Git.SuggestContext(projectID, req.Files, req.Partial)
+	if err != nil {
+		return SuggestResult{}, err
+	}
+	if strings.TrimSpace(cc.Diff) == "" {
+		return SuggestResult{}, errors.New("não há diferença para descrever nos arquivos marcados")
+	}
+	prompt := agent.BuildPrompt(agent.CommitContext{Branch: cc.Branch, Recent: cc.Recent, Files: cc.Files, Diff: cc.Diff, Truncated: cc.Truncated},
+		str("commit.agentLanguage", "auto"), req.UILang, str("commit.agentInstructions", ""))
+	msg, err := g.c.Agent.Run(projectID, cmd, prompt)
+	if err != nil {
+		return SuggestResult{}, err
+	}
+	return SuggestResult{Message: msg, Agent: cmd.Name}, nil
+}
+
+// CancelSuggest interrompe a geração em andamento do projeto.
+func (g *Git) CancelSuggest(projectID string) { g.c.Agent.Cancel(projectID) }

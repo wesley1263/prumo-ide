@@ -49,6 +49,8 @@ releases yet: [the installer](#install) builds it from source in one step.
 **Git**
 - Commit window with partial commits by hunk or by line, changelists, amend, commit message history, and
   optional gofmt, `go vet` and test checks before committing
+- Commit messages written by the AI agent already on your machine (Claude Code, Codex CLI, Gemini CLI or a
+  command of your own), from the files and lines you selected; it only runs when you click, and asks first
 - Branches (favorites, compare with the current branch, worktrees), update, push, stash, tags
 - Log with a branch graph, filters and commit details; cherry-pick, revert, reset and interactive rebase from
   the log; blame in the gutter; a three-way merge tool for conflicts

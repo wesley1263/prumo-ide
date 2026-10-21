@@ -105,4 +105,3 @@ func TestRunConfigsLegacyFolderStillRead(t *testing.T) {
 		t.Fatalf("a config da pasta antiga (.goide/run) deveria entrar: %+v %v", list, err)
 	}
 }
-
