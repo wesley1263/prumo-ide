@@ -5,9 +5,10 @@ import { AppShell } from './shell/AppShell'
 import { SettingsDialog } from './settings/SettingsDialog'
 import { TrustDialog, ConflictDialog } from './shell/Dialogs'
 import { DesignPage } from './design/DesignPage'
-import { EmptyState, Spinner, ToastViewport } from './design/feedback'
+import { EmptyState, ToastViewport } from './design/feedback'
 import { Button } from './design/controls'
 import { t } from './i18n'
+import { hideSplash } from './splash'
 
 function useHash() {
   const [hash, setHash] = useState(location.hash)
@@ -28,6 +29,10 @@ export default function App() {
   useEffect(() => {
     useApp.getState().init()
   }, [])
+  // A tela de abertura (index.html) cobre a espera do backend; sai quando ele respondeu, ou com o erro.
+  useEffect(() => {
+    if (boot || bootError) hideSplash()
+  }, [boot, bootError])
 
   let screen
   if (hash === '#design') screen = <DesignPage />
@@ -39,12 +44,7 @@ export default function App() {
         </EmptyState>
       </div>
     )
-  else if (!boot)
-    screen = (
-      <div className="flex h-full items-center justify-center bg-surface">
-        <Spinner label={t('Carregando')} />
-      </div>
-    )
+  else if (!boot) screen = <div className="h-full bg-bg" aria-hidden /> // a tela de abertura cobre
   else if (!project) screen = <Welcome />
   else screen = <AppShell key={project.id} />
 

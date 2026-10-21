@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Prumo">
+  <title>Prumo</title>
+  <!-- Ícone do app: o prumo sobre o fundo escuro da marca (color.dark.bg), em quadrado arredondado. -->
+  <rect width="1024" height="1024" rx="228" fill="#1d1e21"/>
+  <rect x="8" y="8" width="1008" height="1008" rx="222" fill="none" stroke="#383a3f" stroke-width="16"/>
+  <g transform="translate(512 548) scale(0.78) translate(-512 -512)">
+    <line x1="512" y1="96" x2="512" y2="318" stroke="#dcdee2" stroke-width="18" stroke-linecap="round"/>
+    <circle cx="512" cy="96" r="26" fill="none" stroke="#dcdee2" stroke-width="16"/>
+    <rect x="456" y="306" width="112" height="64" rx="18" fill="#7f9c2c"/>
+    <path d="M398 392 H626 C688 444 690 540 640 618 L548 848 Q512 924 476 848 L384 618 C334 540 336 444 398 392 Z" fill="#9cbf3b"/>
+    <path d="M430 428 C404 470 404 540 438 606 L496 754 C474 640 456 520 470 428 Z" fill="#c6e07a" opacity="0.55"/>
+  </g>
+</svg>

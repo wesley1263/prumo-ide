@@ -124,6 +124,11 @@ install -m 0755 "build/bin/${APP}" "${BIN_DIR}/${APP}"
 ok "${BIN_DIR}/${APP}"
 
 if [[ "$OS" == "Linux" ]]; then
+  ICONS="${PREFIX}/share/icons/hicolor"
+  install -Dm 0644 "${ROOT}/assets/brand/prumo-icon.svg" "${ICONS}/scalable/apps/${APP}.svg"
+  install -Dm 0644 "${ROOT}/assets/brand/prumo-icon-256.png" "${ICONS}/256x256/apps/${APP}.png"
+  have gtk-update-icon-cache && gtk-update-icon-cache -q -t "$ICONS" >/dev/null 2>&1 || true
+  ok "icons: ${ICONS}"
   mkdir -p "$(dirname "$DESKTOP_FILE")"
   cat > "$DESKTOP_FILE" <<EOF
 [Desktop Entry]
@@ -132,6 +137,7 @@ Name=Prumo
 GenericName=Go IDE
 Comment=A desktop IDE for Go, built from open parts
 Exec=${BIN_DIR}/${APP}
+Icon=${APP}
 Terminal=false
 Categories=Development;IDE;
 Keywords=go;golang;ide;editor;debugger;git;

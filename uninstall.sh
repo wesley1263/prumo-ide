@@ -40,6 +40,8 @@ step "Removing Prumo from ${PREFIX}"
 if pgrep -x "$APP" >/dev/null 2>&1; then warn "Prumo is running: close it first so nothing is left half open"; fi
 remove "${PREFIX}/bin/${APP}"
 remove "${PREFIX}/share/applications/${APP}.desktop"
+remove "${PREFIX}/share/icons/hicolor/scalable/apps/${APP}.svg"
+remove "${PREFIX}/share/icons/hicolor/256x256/apps/${APP}.png"
 command -v update-desktop-database >/dev/null 2>&1 && update-desktop-database "${PREFIX}/share/applications" >/dev/null 2>&1 || true
 
 # Where the app keeps its data: the same folders Go's os.UserConfigDir and os.UserCacheDir give it.

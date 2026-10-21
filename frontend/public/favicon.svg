@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 16-32 px: só o peso, sem o fio (o fio some nesse tamanho). -->
+  <rect width="32" height="32" rx="7" fill="#1d1e21"/>
+  <rect x="13" y="5" width="6" height="3.5" rx="1" fill="#7f9c2c"/>
+  <path d="M10.5 9.5 H21.5 C24.5 12 24.6 16.6 22.2 20.3 L17.6 27.6 Q16 30 14.4 27.6 L9.8 20.3 C7.4 16.6 7.5 12 10.5 9.5 Z" fill="#9cbf3b"/>
+</svg>

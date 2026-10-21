@@ -74,8 +74,11 @@ não entraram (não adivinhar).
   Wails, de onde ele gera os ícones de Linux, macOS e Windows); favicon (SVG + 32 px); imagem social 1200×630.
 - **Não pode lembrar o original:** nada do quadrado preto com sigla de duas letras e faixa de gradiente dos produtos
   JetBrains, nada do gopher nem do "GO" inclinado do Go. Colocar os rascunhos ao lado desses logos e conferir.
-- **Hoje:** não existe ícone. O favicon está vazio e, sem `build/appicon.png`, o `wails build` usa o ícone padrão
-  do Wails. Pendente até o logo existir.
+- **Versão provisória feita (2026-10-21):** `assets/brand/prumo-icon.svg` (ícone, 1024), `prumo-mark.svg` (símbolo sem
+  fundo), `prumo-favicon.svg` (só o peso, para 16–32 px) e os PNGs 1024/256 gerados deles com o Chrome headless.
+  Ligados em `build/appicon.png` (Wails), no ícone da janela (Linux) e do "Sobre" (macOS), no favicon, nos ícones e
+  no atalho de menu que o `install.sh` instala, e no README. Conferidos em 256, 128, 48, 32 e 16 px. Sem wordmark
+  em curvas (o "Prumo" ao lado do símbolo é texto); um designer pode refinar a partir deste briefing.
 
 ## Voz
 
@@ -124,5 +127,5 @@ Nenhum deles ecoa frases do GoLand (foram escritos para o clone desde o começo,
 
 1. **Repositório:** o GitHub e a pasta local se chamam `replica-goland`. Renomear para `prumo` (Settings →
    Repository name no GitHub; ele redireciona o endereço antigo) é decisão do dono do repositório.
-2. **Logo e ícone:** pelo briefing acima; até lá o build usa o ícone padrão do Wails.
+2. **Logo:** a versão provisória está em `assets/brand/`; refinar com um designer se for divulgar mais.
 3. **Marcas:** rodar as buscas marcadas "a rodar" e, antes de gastar com o nome, falar com um advogado de marcas.

@@ -1,6 +1,10 @@
-# Prumo
+<p align="center">
+  <img src="assets/brand/prumo-icon.svg" alt="Prumo logo: a plumb bob hanging on its line" width="128">
+</p>
 
-**A desktop IDE for Go, built from open parts.**
+<h1 align="center">Prumo</h1>
+
+<p align="center"><strong>A desktop IDE for Go, built from open parts.</strong></p>
 
 Prumo puts an editor, run configurations, a test runner, a debugger, a terminal and a full Git workflow in one
 window, and gets its language smarts from the official, open tooling of the Go ecosystem: `gopls`, Delve,
@@ -146,7 +150,6 @@ Settings → Appearance → Language. Tests fail if a new string is missing its 
   attaching to a remote `dlv --headless` works.
 - Change signature only covers what `gopls` offers (move or remove a parameter). Move refactoring is not there.
 - No file watcher yet: changes made outside the IDE show up after saving, running, committing or refreshing.
-- No app icon yet.
 
 ## Contributing
 

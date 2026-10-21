@@ -297,4 +297,5 @@ export const shell: Record<string, string> = {
 
   // design/feedback.tsx
   Fechar: 'Close',
+  'Carregando o Prumo…': 'Loading Prumo…',
 }
