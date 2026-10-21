@@ -24,10 +24,10 @@ test('F03-H10 exit points e chamada recursiva marcada', async ({ page, fx }) => 
   await openProject(page, dir)
   await openFile(page, 'internal/cart/fat.go')
   // Só a chamada de verdade (linha 8) ganha o ↻; a closure sombreada em Conta, não.
-  await expect(page.locator('.goide-recursion')).toHaveCount(1, { timeout: 30_000 })
+  await expect(page.locator('.prumo-recursion')).toHaveCount(1, { timeout: 30_000 })
   const hover = await page.evaluate(() => {
-    const m = (window as any).__goideEditor.getModel()
-    return m.getAllDecorations().filter((d: any) => d.options.glyphMarginClassName === 'goide-recursion').map((d: any) => d.range.startLineNumber)
+    const m = (window as any).__prumoEditor.getModel()
+    return m.getAllDecorations().filter((d: any) => d.options.glyphMarginClassName === 'prumo-recursion').map((d: any) => d.range.startLineNumber)
   })
   expect(hover).toEqual([8])
 

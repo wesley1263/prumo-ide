@@ -54,7 +54,7 @@ async function paint(seq: number) {
       range: new monaco.Range(l, model.getLineMaxColumn(l), l, model.getLineMaxColumn(l)),
       options: {
         showIfCollapsed: true,
-        after: { content: '   ' + shown.map((v) => `${v.name} = ${short(v.value)}`).join(', '), inlineClassName: 'goide-inline-value' },
+        after: { content: '   ' + shown.map((v) => `${v.name} = ${short(v.value)}`).join(', '), inlineClassName: 'prumo-inline-value' },
       },
     })
   }

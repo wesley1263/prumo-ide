@@ -104,12 +104,12 @@ function theme(base: 'vs' | 'vs-dark', c: Palette): monaco.editor.IStandaloneThe
   }
 }
 
-monaco.editor.defineTheme('goide-dark', theme('vs-dark', tokens.color.dark))
-monaco.editor.defineTheme('goide-light', theme('vs', tokens.color.light))
+monaco.editor.defineTheme('prumo-dark', theme('vs-dark', tokens.color.dark))
+monaco.editor.defineTheme('prumo-light', theme('vs', tokens.color.light))
 
 /** Aplica o tema da IDE no Monaco. */
 export function setMonacoTheme(mode: 'dark' | 'light') {
-  monaco.editor.setTheme(mode === 'dark' ? 'goide-dark' : 'goide-light')
+  monaco.editor.setTheme(mode === 'dark' ? 'prumo-dark' : 'prumo-light')
 }
 
 // Atalhos de editor no estilo das IDEs desktop. Os comandos são os do próprio Monaco.

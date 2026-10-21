@@ -11,7 +11,7 @@ import (
 	"strings"
 	"sync"
 
-	"goide/internal/store"
+	"prumo/internal/store"
 )
 
 var (

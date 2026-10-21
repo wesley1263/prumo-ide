@@ -15,9 +15,9 @@ import (
 
 	"github.com/google/go-dap"
 
-	"goide/internal/run"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/run"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // Attach: depurar um processo que já está rodando nesta máquina (pelo pid) ou um "dlv --headless" em outra

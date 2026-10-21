@@ -97,7 +97,7 @@ export const common: Record<string, string> = {
     'Temporary configuration (created by the gutter ▶). Older temporary configurations are discarded automatically.',
   Nome: 'Name',
   Compartilhar: 'Share',
-  'Fica em .goide/run/ no projeto: vai pelo git para quem clonar.': 'Stored in .goide/run/ in the project: shared via git with anyone who clones it.',
+  'Fica em .prumo/run/ no projeto: vai pelo git para quem clonar.': 'Stored in .prumo/run/ in the project: shared via git with anyone who clones it.',
   'Guardar como arquivo do projeto': 'Store as project file',
   Testar: 'Test',
   Executar: 'Run',

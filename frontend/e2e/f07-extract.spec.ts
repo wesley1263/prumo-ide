@@ -4,7 +4,7 @@ import type { Page } from '@playwright/test'
 
 async function select(page: Page, text: string) {
   await page.evaluate((t) => {
-    const ed = (window as any).__goideEditor
+    const ed = (window as any).__prumoEditor
     const m = ed.getModel()
     const off = m.getValue().indexOf(t)
     const a = m.getPositionAt(off)

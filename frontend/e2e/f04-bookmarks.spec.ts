@@ -3,7 +3,7 @@ import { test, expect, openProject, openFile, cursorAt, a11y } from './helpers'
 import type { Page } from '@playwright/test'
 
 const list = (page: Page) => page.getByRole('listbox', { name: 'Bookmarks do projeto' })
-const cursorLine = (page: Page) => page.evaluate(() => (window as any).__goideEditor.getPosition().lineNumber as number)
+const cursorLine = (page: Page) => page.evaluate(() => (window as any).__prumoEditor.getPosition().lineNumber as number)
 
 test('F04-H9 bookmarks: marcar, mnemônico, pular, seguir a edição e reabrir', async ({ page, fx }) => {
   const dir = fx.seed()
@@ -12,7 +12,7 @@ test('F04-H9 bookmarks: marcar, mnemônico, pular, seguir a edição e reabrir',
   await cursorAt(page, 'func (c *Cart) Total')
   const totalLine = await cursorLine(page)
   await page.keyboard.press('F11')
-  await expect(page.locator('.goide-bookmark')).toHaveCount(1)
+  await expect(page.locator('.prumo-bookmark')).toHaveCount(1)
 
   // Mnemônico 3 noutro arquivo.
   await openFile(page, 'internal/catalog/catalog.go')
@@ -24,7 +24,7 @@ test('F04-H9 bookmarks: marcar, mnemônico, pular, seguir a edição e reabrir',
   expect(await a11y(page)).toEqual([])
   await page.keyboard.press('3')
   await expect(mn).toBeHidden()
-  await expect(page.locator('.goide-bm-3')).toHaveCount(1)
+  await expect(page.locator('.prumo-bm-3')).toHaveCount(1)
 
   // Duas linhas novas acima (comentários: o gofmt do salvar não as junta): a marca desce junto.
   await cursorAt(page, 'package catalog', 'after')
@@ -56,7 +56,7 @@ test('F04-H9 bookmarks: marcar, mnemônico, pular, seguir a edição e reabrir',
   // F11 de novo desmarca; reabrindo o projeto, o outro continua.
   const saved = page.waitForResponse((r) => (r.request().postData() ?? '').includes('Workspace.Save'))
   await page.keyboard.press('F11')
-  await expect(page.locator('.goide-bookmark')).toHaveCount(0)
+  await expect(page.locator('.prumo-bookmark')).toHaveCount(0)
   await saved // o estado do projeto é gravado com 1 s de folga
   await page.reload()
   await page.getByRole('list', { name: 'Projetos recentes' }).getByRole('button', { name: new RegExp(dir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).click()

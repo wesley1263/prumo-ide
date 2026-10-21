@@ -29,7 +29,7 @@ test('F10-H8 anexar a um Delve remoto', async ({ page, fx }) => {
     await openProject(page, dir)
     await openFile(page, 'internal/cart/cart.go')
     await page.locator('.monaco-editor .line-numbers').filter({ hasText: /^35$/ }).click()
-    await expect(page.locator('.goide-bp')).toHaveCount(1)
+    await expect(page.locator('.prumo-bp')).toHaveCount(1)
     await page.keyboard.press('Control+Alt+F5')
     const dlg = page.getByRole('dialog', { name: 'Anexar o depurador' })
     await dlg.getByRole('tab', { name: 'Delve remoto (headless)' }).click()

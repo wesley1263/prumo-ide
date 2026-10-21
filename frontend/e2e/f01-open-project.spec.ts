@@ -20,7 +20,7 @@ test.describe('F01 abrir projeto', () => {
     await expect(page.getByRole('contentinfo').getByText('Modo restrito')).toBeVisible()
     await openFile(page, 'cmd/shop/main.go')
     await page.keyboard.press('Shift+F10') // sem configuração ainda: só avisa
-    await page.locator('.goide-run-glyph').first().click()
+    await page.locator('.prumo-run-glyph').first().click()
     await expect(page.getByRole('dialog', { name: 'Confiar neste projeto?' })).toBeVisible()
   })
 
@@ -54,7 +54,7 @@ test.describe('F01 abrir projeto', () => {
     await openProject(page, dir)
     await expect(page.getByRole('banner').getByText('Café ☕ loja')).toBeVisible()
     await openFile(page, 'cmd/shop/main.go')
-    await page.locator('.goide-run-glyph').first().click()
+    await page.locator('.prumo-run-glyph').first().click()
     await expect(page.getByRole('log').getByText('Total: R$ 93,90')).toBeVisible({ timeout: 60_000 })
   })
 

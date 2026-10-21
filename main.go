@@ -1,4 +1,4 @@
-// Command goide é a IDE desktop (Wails v2).
+// Command prumo é a IDE desktop (Wails v2).
 //
 // Linux: precisa de libgtk-3-dev e libwebkit2gtk-4.1-dev; compile com -tags webkit2_41.
 //
@@ -14,14 +14,22 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"goide/internal/app"
-	"goide/internal/events"
+	"prumo/internal/app"
+	"prumo/internal/events"
 )
 
 //go:embed all:frontend/dist
 var assets embed.FS
+
+// Ícone do app (gerado de assets/brand/prumo-icon.svg): janela no Linux e "Sobre" no macOS. O wails build também
+// gera daqui os ícones de pacote de cada sistema.
+//
+//go:embed build/appicon.png
+var appIcon []byte
 
 func main() {
 	core, err := app.New(context.Background(), app.Options{AllowedOrigins: app.WailsOrigins})
@@ -35,7 +43,7 @@ func main() {
 	}
 
 	err = wails.Run(&options.App{
-		Title:            "goide",
+		Title:            "Prumo",
 		Width:            1440,
 		Height:           900,
 		MinWidth:         800,
@@ -59,6 +67,8 @@ func main() {
 		},
 		OnShutdown: func(context.Context) { app.Shutdown(core) },
 		Bind:       bind,
+		Linux:      &linux.Options{Icon: appIcon, ProgramName: "prumo"},
+		Mac:        &mac.Options{About: &mac.AboutInfo{Title: "Prumo", Message: "A desktop IDE for Go, built from open parts", Icon: appIcon}},
 	})
 	if err != nil {
 		log.Fatal(err)

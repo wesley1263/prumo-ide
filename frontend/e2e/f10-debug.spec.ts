@@ -8,13 +8,13 @@ const lineNumber = (page: Page, n: number) => page.locator('.monaco-editor .line
 const dbg = (page: Page) => page.getByRole('region', { name: 'Depurar' })
 
 async function toggleBreakpoint(page: Page, line: number) {
-  const before = await page.locator('.goide-bp').count()
+  const before = await page.locator('.prumo-bp').count()
   await lineNumber(page, line).click()
-  await expect(page.locator('.goide-bp')).toHaveCount(before === 0 ? 1 : 0)
+  await expect(page.locator('.prumo-bp')).toHaveCount(before === 0 ? 1 : 0)
 }
 
 async function debugFromGutter(page: Page, label: RegExp, glyph = 0) {
-  await page.locator('.goide-run-glyph').nth(glyph).click({ button: 'right' })
+  await page.locator('.prumo-run-glyph').nth(glyph).click({ button: 'right' })
   await page.getByRole('menu', { name: 'Rodar ou depurar' }).getByRole('menuitem', { name: label }).click()
 }
 
@@ -30,12 +30,12 @@ test.describe('F10 depurar', () => {
     // Parou no breakpoint: a janela abre, o editor vai para cart.go e a linha fica destacada.
     await expect(dbg(page).getByText(/parado \(breakpoint\)/)).toBeVisible({ timeout: 90_000 })
     await expect(page.getByRole('tab', { name: 'cart.go', exact: true })).toHaveAttribute('aria-selected', 'true')
-    await expect(page.locator('.goide-exec-line')).toHaveCount(1)
+    await expect(page.locator('.prumo-exec-line')).toHaveCount(1)
     const vars = dbg(page).getByRole('tree', { name: 'Variáveis' })
     await expect(vars.getByRole('treeitem', { name: /^total = 0/ })).toBeVisible()
     // Valores no próprio editor, no fim das linhas da função até a linha atual.
     // (o Monaco desenha os espaços como &nbsp;: \s na regex)
-    await expect(page.locator('.monaco-editor .goide-inline-value').filter({ hasText: /total\s=\s0/ }).first()).toBeVisible()
+    await expect(page.locator('.monaco-editor .prumo-inline-value').filter({ hasText: /total\s=\s0/ }).first()).toBeVisible()
     await expect(dbg(page).getByRole('listbox', { name: 'Quadros da pilha' }).getByRole('option').first()).toContainText('Total')
 
     // Avaliar uma expressão no quadro.
@@ -56,10 +56,10 @@ test.describe('F10 depurar', () => {
     await toggleBreakpoint(page, bpLine)
     await page.keyboard.press('F9')
     await expect(dbg(page).getByText(/encerrado/)).toBeVisible({ timeout: 30_000 })
-    await expect(page.locator('.monaco-editor .goide-inline-value')).toHaveCount(0) // somem ao terminar
+    await expect(page.locator('.monaco-editor .prumo-inline-value')).toHaveCount(0) // somem ao terminar
     await dbg(page).getByRole('tab', { name: 'Console' }).click()
     await expect(dbg(page).getByRole('log')).toContainText('Total: R$ 93,90')
-    await expect(page.locator('.goide-exec-line')).toHaveCount(0)
+    await expect(page.locator('.prumo-exec-line')).toHaveCount(0)
   })
 
   test('F10-H2 F8 passa para a próxima linha', async ({ page, fx }) => {
@@ -87,13 +87,13 @@ test.describe('F10 depurar', () => {
     // A linha nova vai para o banco numa chamada à parte, logo depois de gravar: espera ela antes de recarregar.
     const moved = page.waitForResponse((r) => r.url().endsWith('/bridge/rpc') && (r.request().postData() ?? '').includes('Breakpoints.Move'))
     await page.keyboard.press(`${mod}+s`)
-    await expect(lineNumber(page, bpLine + 1)).toHaveClass(/goide-bp/)
+    await expect(lineNumber(page, bpLine + 1)).toHaveClass(/prumo-bp/)
     await moved
     await page.reload()
     await page.getByRole('list', { name: 'Projetos recentes' }).getByRole('button', { name: new RegExp(dir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).click()
     await openFile(page, 'internal/cart/cart.go')
-    await expect(lineNumber(page, bpLine + 1)).toHaveClass(/goide-bp/)
-    await expect(page.locator('.goide-bp')).toHaveCount(1)
+    await expect(lineNumber(page, bpLine + 1)).toHaveClass(/prumo-bp/)
+    await expect(page.locator('.prumo-bp')).toHaveCount(1)
   })
 
   test('F10-E2 depurar um teste pelo ▶ do gutter', async ({ page, fx }) => {
@@ -120,10 +120,10 @@ test.describe('F10 depurar', () => {
     await cursorAt(page, 'return total', 'before')
     await page.keyboard.press('Alt+F9')
     await expect(dbg(page).getByText(/parado/)).toBeVisible({ timeout: 30_000 })
-    await expect(page.locator('.goide-exec-line')).toHaveCount(1)
+    await expect(page.locator('.prumo-exec-line')).toHaveCount(1)
     await expect(dbg(page).getByRole('tree', { name: 'Variáveis' }).getByRole('treeitem', { name: /^total = 9390/ })).toBeVisible()
     // Sem marca de breakpoint no cursor e, continuando, a segunda chamada do Total não para.
-    await expect(page.locator('.goide-bp')).toHaveCount(0)
+    await expect(page.locator('.prumo-bp')).toHaveCount(0)
     await page.keyboard.press('F9')
     await expect(dbg(page).getByText(/encerrado/)).toBeVisible({ timeout: 30_000 })
   })

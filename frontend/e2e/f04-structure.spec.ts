@@ -15,7 +15,7 @@ test('F04-H5 Estrutura lista os símbolos; clicar leva ao código; breadcrumbs s
   expect(await a11y(page)).toEqual([])
 
   await total.click()
-  await expect.poll(() => page.evaluate(() => (window as any).__goideEditor.getPosition().lineNumber)).toBe(32)
+  await expect.poll(() => page.evaluate(() => (window as any).__prumoEditor.getPosition().lineNumber)).toBe(32)
   // Cursor dentro de Total: o símbolo aparece nos breadcrumbs e fica selecionado na Estrutura.
   await cursorAt(page, 'total += l.Product')
   await expect(crumbs(page)).toContainText(/Total/)

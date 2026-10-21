@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"syscall"
 
-	"goide/internal/proc"
+	"prumo/internal/proc"
 )
 
 func setProcessGroup(cmd *exec.Cmd) { cmd.SysProcAttr = proc.Attr(true) }

@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/proc"
-	"goide/internal/store"
+	"prumo/internal/events"
+	"prumo/internal/proc"
+	"prumo/internal/store"
 )
 
 // GoTools são os comandos do menu Ferramentas do Go (S03). Só estes: o resto é pelo terminal.

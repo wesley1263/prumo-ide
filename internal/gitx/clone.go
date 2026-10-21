@@ -15,9 +15,9 @@ import (
 	"sync"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/proc"
-	"goide/internal/store"
+	"prumo/internal/events"
+	"prumo/internal/proc"
+	"prumo/internal/store"
 )
 
 // ---------------------------------------------------------------- clonar (S29)

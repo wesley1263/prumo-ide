@@ -8,7 +8,7 @@ export const isCanceled = (e: unknown) => e instanceof Error && (e.name === 'Can
 export function runAction(ed: monaco.editor.ICodeEditor | null | undefined, id: string, args?: unknown) {
   if (!ed) return
   const a = ed.getAction(id)
-  if (!a) return ed.trigger('goide', id, args ?? {})
+  if (!a) return ed.trigger('prumo', id, args ?? {})
   a.run(args).catch((e) => {
     if (!isCanceled(e)) console.error(e)
   })

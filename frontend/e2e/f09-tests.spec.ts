@@ -38,7 +38,7 @@ const results = (page: Page) => tests(page).getByRole('tree', { name: 'Resultado
 
 async function runPackageTests(page: Page) {
   await openFile(page, 'internal/cart/extra_test.go')
-  await page.locator('.goide-run-glyph').first().click() // linha "package"
+  await page.locator('.prumo-run-glyph').first().click() // linha "package"
   await expect(tests(page).getByRole('status')).toContainText('falharam', { timeout: 90_000 })
   await expect(tests(page).getByRole('status')).not.toContainText('rodando', { timeout: 90_000 })
 }
@@ -47,7 +47,7 @@ test.describe('F09 testes', () => {
   test('F09-H1 rodar um teste pelo ▶ ao lado da função', async ({ page, fx }) => {
     await openProject(page, fx.seed())
     await openFile(page, 'internal/cart/cart_test.go')
-    await page.locator('.goide-run-glyph').nth(1).click() // [0] = package, [1] = TestTotal
+    await page.locator('.prumo-run-glyph').nth(1).click() // [0] = package, [1] = TestTotal
     await expect(tests(page).getByRole('status')).toContainText('1 passaram, 0 falharam', { timeout: 90_000 })
     await expect(results(page).getByRole('treeitem', { name: /^TestTotal, passou/ })).toBeVisible()
   })
@@ -103,7 +103,7 @@ test.describe('F09 testes', () => {
     fx.write(dir, 'internal/cart/quebrado_test.go', 'package cart\n\nimport "testing"\n\nfunc TestQuebrado(t *testing.T) { var x int = "texto"; _ = x }\n')
     await openProject(page, dir)
     await openFile(page, 'internal/cart/quebrado_test.go')
-    await page.locator('.goide-run-glyph').first().click()
+    await page.locator('.prumo-run-glyph').first().click()
     await expect(tests(page).getByRole('status')).toContainText('0 passaram', { timeout: 90_000 })
     await expect(results(page).getByRole('treeitem', { name: /cart, falhou/ })).toBeVisible()
     // O erro do compilador vai para o console da execução.
@@ -114,7 +114,7 @@ test.describe('F09 testes', () => {
   test('F09-N1 modo restrito: rodar teste pede confiança', async ({ page, fx }) => {
     await openProject(page, fx.seed(), { trust: false })
     await openFile(page, 'internal/cart/cart_test.go')
-    await page.locator('.goide-run-glyph').nth(1).click()
+    await page.locator('.prumo-run-glyph').nth(1).click()
     await expect(page.getByRole('dialog', { name: 'Confiar neste projeto?' })).toBeVisible()
   })
 
@@ -144,7 +144,7 @@ test('F09-H7 rodar de novo ao salvar', async ({ page, fx }) => {
   const dir = fx.seed()
   await openProject(page, dir)
   await openFile(page, 'internal/cart/cart_test.go')
-  await page.locator('.goide-run-glyph').nth(1).click()
+  await page.locator('.prumo-run-glyph').nth(1).click()
   await expect(tests(page).getByRole('status')).toContainText('1 passaram, 0 falharam', { timeout: 90_000 })
   await tests(page).getByRole('button', { name: 'Rodar de novo ao salvar' }).click()
   await expect(tests(page).getByRole('button', { name: 'Rodar de novo ao salvar' })).toHaveAttribute('aria-pressed', 'true')
@@ -153,7 +153,7 @@ test('F09-H7 rodar de novo ao salvar', async ({ page, fx }) => {
   await openFile(page, 'internal/cart/cart.go')
   const ed = page.locator('.monaco-editor').first()
   await page.evaluate(() => {
-    const ed = (window as any).__goideEditor
+    const ed = (window as any).__prumoEditor
     const m = ed.getModel()
     const r = m.findMatches('return total', false, false, true, null, false)[0].range
     ed.executeEdits('t', [{ range: r, text: 'return total + 1' }])

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"goide/internal/events"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 func subjects(cs []LogCommit) []string {

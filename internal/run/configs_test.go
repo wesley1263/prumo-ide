@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 func TestValidateAndSave(t *testing.T) {

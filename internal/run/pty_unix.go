@@ -8,7 +8,7 @@ import (
 
 	"github.com/creack/pty"
 
-	"goide/internal/proc"
+	"prumo/internal/proc"
 )
 
 // startPTY sobe o programa num pseudo-terminal ("Emular terminal no console"): isatty dá verdadeiro, então

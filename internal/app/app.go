@@ -7,29 +7,44 @@ import (
 	"os"
 	"path/filepath"
 
-	"goide/internal/api"
-	"goide/internal/bridge"
-	"goide/internal/debug"
-	"goide/internal/events"
-	"goide/internal/files"
-	"goide/internal/gitx"
-	"goide/internal/lsp"
-	"goide/internal/run"
-	"goide/internal/sdk"
-	"goide/internal/search"
-	"goide/internal/store"
-	"goide/internal/term"
-	"goide/internal/tools"
-	"goide/internal/workspace"
+	"prumo/internal/api"
+	"prumo/internal/bridge"
+	"prumo/internal/debug"
+	"prumo/internal/events"
+	"prumo/internal/files"
+	"prumo/internal/gitx"
+	"prumo/internal/lsp"
+	"prumo/internal/run"
+	"prumo/internal/sdk"
+	"prumo/internal/search"
+	"prumo/internal/store"
+	"prumo/internal/term"
+	"prumo/internal/tools"
+	"prumo/internal/workspace"
 )
 
-// Name é o nome provisório do produto (o /replica-brand troca).
-const Name = "goide"
+// Name é o nome do produto (pastas de dados, cliente LSP/DAP, TERM_PROGRAM).
+const Name = "prumo"
+
+// LegacyName é o nome provisório de antes da marca: as pastas antigas são levadas para as novas.
+const LegacyName = "goide"
+
+// MigrateDir move base/<old> para base/<name> na primeira execução depois da troca de nome
+// (configurações, projetos recentes, breakpoints e o cache ficam onde estavam, com o nome novo).
+func MigrateDir(base, old, name string) {
+	old, cur := filepath.Join(base, old), filepath.Join(base, name)
+	if _, err := os.Stat(cur); err == nil {
+		return
+	}
+	if st, err := os.Stat(old); err == nil && st.IsDir() {
+		_ = os.Rename(old, cur)
+	}
+}
 
 // Options configura a montagem.
 type Options struct {
-	DataDir        string   // "" = os.UserConfigDir()/goide
-	CacheDir       string   // "" = os.UserCacheDir()/goide
+	DataDir        string   // "" = os.UserConfigDir()/prumo
+	CacheDir       string   // "" = os.UserCacheDir()/prumo
 	BridgeAddr     string   // "" = 127.0.0.1:0
 	AllowedOrigins []string // Origins da UI
 	Dev            bool
@@ -45,6 +60,7 @@ func New(ctx context.Context, opt Options) (*api.Core, error) {
 		if err != nil {
 			return nil, err
 		}
+		MigrateDir(base, LegacyName, Name)
 		opt.DataDir = filepath.Join(base, Name)
 	}
 	if opt.CacheDir == "" {
@@ -52,6 +68,7 @@ func New(ctx context.Context, opt Options) (*api.Core, error) {
 		if err != nil {
 			return nil, err
 		}
+		MigrateDir(base, LegacyName, Name)
 		opt.CacheDir = filepath.Join(base, Name)
 	}
 	if opt.BridgeAddr == "" {

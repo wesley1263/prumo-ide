@@ -25,13 +25,13 @@ import (
 
 	"github.com/coder/websocket"
 
-	"goide/internal/events"
-	"goide/internal/lsp"
-	"goide/internal/run"
+	"prumo/internal/events"
+	"prumo/internal/lsp"
+	"prumo/internal/run"
 )
 
 // TokenHeader é o cabeçalho do token em requisições HTTP; em WebSocket vai na query (?token=).
-const TokenHeader = "X-Goide-Token"
+const TokenHeader = "X-Prumo-Token"
 
 // Config define a ponte.
 type Config struct {

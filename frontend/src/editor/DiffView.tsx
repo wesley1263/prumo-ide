@@ -15,7 +15,7 @@ import { cn } from '../design/cn'
 import tokens from '../../../replica/design/tokens.json'
 import { t } from '../i18n'
 
-// Modo escolhido vale para os próximos diffs (como no GoLand).
+// Modo escolhido vale para os próximos diffs.
 let sideBySide = true
 
 interface Props {
@@ -53,7 +53,7 @@ export function DiffView({ projectId, path, rev, oldPath }: Props) {
       stickyScroll: { enabled: false },
     })
     ed.current = e
-    if (import.meta.env.DEV) (window as unknown as { __goideDiffEditor?: unknown }).__goideDiffEditor = e
+    if (import.meta.env.DEV) (window as unknown as { __prumoDiffEditor?: unknown }).__prumoDiffEditor = e
     return () => {
       const m = e.getModel()
       e.setModel(null) // o widget larga os modelos antes de eles sumirem
@@ -130,13 +130,13 @@ export function DiffView({ projectId, path, rev, oldPath }: Props) {
     m.setPosition({ lineNumber: line, column: 1 })
   }
 
-  // F7 / Shift+F7 dentro do diff, como no GoLand.
+  // F7 / Shift+F7 dentro do diff, como nas IDEs desktop.
   useEffect(() => {
     const e = ed.current
     if (!e) return
     const m = e.getModifiedEditor()
-    const a = m.addAction({ id: 'goide.diff.next', label: t('Próxima diferença'), keybindings: [monaco.KeyCode.F7], run: () => goTo(Math.min(hunks.length - 1, current + 1)) })
-    const b = m.addAction({ id: 'goide.diff.prev', label: t('Diferença anterior'), keybindings: [monaco.KeyMod.Shift | monaco.KeyCode.F7], run: () => goTo(Math.max(0, current - 1)) })
+    const a = m.addAction({ id: 'prumo.diff.next', label: t('Próxima diferença'), keybindings: [monaco.KeyCode.F7], run: () => goTo(Math.min(hunks.length - 1, current + 1)) })
+    const b = m.addAction({ id: 'prumo.diff.prev', label: t('Diferença anterior'), keybindings: [monaco.KeyMod.Shift | monaco.KeyCode.F7], run: () => goTo(Math.max(0, current - 1)) })
     return () => {
       a.dispose()
       b.dispose()

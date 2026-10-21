@@ -10,8 +10,8 @@ import (
 	"strconv"
 	"strings"
 
-	"goide/internal/events"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/workspace"
 )
 
 // ---------------------------------------------------------------- branches
@@ -140,7 +140,7 @@ func (g *Git) Checkout(projectID, ref, mode string) (CheckoutResult, error) {
 		if len(strings.TrimSpace(string(dirty))) == 0 {
 			break
 		}
-		if _, err := g.run(ctx, top, false, "stash", "push", "--include-untracked", "-m", "goide: troca de branch"); err != nil {
+		if _, err := g.run(ctx, top, false, "stash", "push", "--include-untracked", "-m", "prumo: troca de branch"); err != nil {
 			return CheckoutResult{}, err
 		}
 		if _, err := g.run(ctx, top, false, args...); err != nil {

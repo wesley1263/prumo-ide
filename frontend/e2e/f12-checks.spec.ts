@@ -7,7 +7,7 @@ const commit = (page: Page) => page.getByRole('region', { name: 'Commit' })
 // As opções ficam nas preferências do app: voltam ao padrão para não afetar outros testes.
 test.afterEach(async () => {
   for (const k of ['commit.format', 'commit.vet', 'commit.tests'])
-    await fetch(`${API}/rpc`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Goide-Token': token() }, body: JSON.stringify({ method: 'Settings.Set', args: [k, false] }) })
+    await fetch(`${API}/rpc`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Prumo-Token': token() }, body: JSON.stringify({ method: 'Settings.Set', args: [k, false] }) })
 })
 
 test('F12-H6 formatar ao commitar e go vet que pede confirmação', async ({ page, fx }) => {

@@ -21,7 +21,7 @@ import { lang, t, tn } from '../i18n'
 const ROW = 24 // h-row
 const DEBOUNCE = 250
 
-// Opções lembradas entre aberturas (como no GoLand).
+// Opções lembradas entre aberturas.
 let last: Omit<SearchOptions, 'query'> & { useMask: boolean; scope: 'project' | 'dir' } = {
   regex: false,
   caseSensitive: false,
@@ -526,7 +526,7 @@ function Preview({ match, projectId }: { match?: SearchMatch; projectId: string 
       if (stale) return
       if (ed.getModel() !== model) ed.setModel(model)
       const range = new monaco.Range(match.line, match.col, match.line, match.col + match.len)
-      decos.current!.set([{ range, options: { inlineClassName: 'goide-find-match', className: 'goide-find-line', isWholeLine: false } }])
+      decos.current!.set([{ range, options: { inlineClassName: 'prumo-find-match', className: 'prumo-find-line', isWholeLine: false } }])
       ed.revealRangeInCenter(range, monaco.editor.ScrollType.Immediate)
       setPath(match.path)
     }

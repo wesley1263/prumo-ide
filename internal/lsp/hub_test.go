@@ -13,9 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 func TestFraming(t *testing.T) {
@@ -86,7 +86,7 @@ func waitFor(t *testing.T, c *fakeConn, what string, match func(m message) bool)
 		case b := <-c.out:
 			var m message
 			json.Unmarshal(b, &m)
-			if os.Getenv("GOIDE_LSP_DEBUG") != "" {
+			if os.Getenv("PRUMO_LSP_DEBUG") != "" {
 				t.Logf("<- %.200s", b)
 			}
 			if match(m) {

@@ -105,12 +105,12 @@ func (g *Git) InteractiveRebase(projectID, base string, steps []RebaseStep) (OpR
 		return OpResult{}, err
 	}
 	gitDir := strings.TrimSpace(string(gitDirOut))
-	if old, _ := filepath.Glob(filepath.Join(gitDir, "goide-rebase-*")); len(old) > 0 {
+	if old, _ := filepath.Glob(filepath.Join(gitDir, "prumo-rebase-*")); len(old) > 0 {
 		for _, d := range old {
 			_ = os.RemoveAll(d) // sobra de um rebase anterior que parou e já terminou
 		}
 	}
-	work := filepath.Join(gitDir, "goide-rebase-"+strconv.FormatInt(time.Now().UnixNano(), 36))
+	work := filepath.Join(gitDir, "prumo-rebase-"+strconv.FormatInt(time.Now().UnixNano(), 36))
 	if err := os.MkdirAll(work, 0o700); err != nil {
 		return OpResult{}, err
 	}

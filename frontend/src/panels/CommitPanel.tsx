@@ -240,7 +240,7 @@ export function CommitPanel() {
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'F6' && f.kind !== 'untracked' && f.kind !== 'conflict') {
-                    // F6: mover para outra changelist (como no GoLand).
+                    // F6: mover para outra changelist.
                     e.preventDefault()
                     const r = e.currentTarget.getBoundingClientRect()
                     setClMenu({ x: r.left + 24, y: r.bottom, path: f.path })

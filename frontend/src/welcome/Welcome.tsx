@@ -118,8 +118,8 @@ export function Welcome() {
     <div className="flex h-full bg-surface text-text">
       <aside className="flex w-settings-nav-width shrink-0 flex-col gap-6 border-r border-border bg-chrome p-4">
         <div>
-          <div className="text-xl">goide</div>
-          <div className="text-xs text-text-muted">{t('IDE para Go · versão de desenvolvimento')}</div>
+          <div className="text-xl">Prumo</div>
+          <div className="text-xs text-text-muted">{t('IDE para Go feita de peças abertas · em desenvolvimento')}</div>
         </div>
         <nav aria-label={t('Tela inicial')} className="flex flex-col gap-0.5">
           <span className="flex h-control items-center rounded-md bg-selection px-2 text-sm text-text" aria-current="page">

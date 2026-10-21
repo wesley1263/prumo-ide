@@ -18,10 +18,10 @@ import (
 	"sync"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/files"
-	"goide/internal/proc"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/files"
+	"prumo/internal/proc"
+	"prumo/internal/workspace"
 )
 
 // MaxFileBytes: arquivos maiores ficam de fora da busca de texto.

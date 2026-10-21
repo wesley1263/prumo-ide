@@ -1,7 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './styles.css'
-import { lang, setDictionary } from './i18n'
+import { lang, setDictionary, t } from './i18n'
+import { labelSplash } from './splash'
 import { en } from './i18n/en'
 
 // Rejeições internas do Monaco sem efeito na tela: cancelamento (o texto mudou durante um pedido) e o worker
@@ -14,6 +15,7 @@ window.addEventListener('unhandledrejection', (e) => {
 // O idioma vale antes de o Monaco carregar: as traduções dele (pt-BR) entram num global que ele lê ao iniciar.
 document.documentElement.lang = lang
 setDictionary(en)
+labelSplash(t('Carregando o Prumo…'))
 async function start() {
   if (lang === 'pt-BR') {
     // O pacote pt-BR do próprio Monaco vem vazio: a tabela é nossa (src/i18n/monaco-pt.ts → monaco-pt-br.gen.ts).

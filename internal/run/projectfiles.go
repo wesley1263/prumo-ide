@@ -10,15 +10,19 @@ import (
 	"sort"
 	"strings"
 
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // Configs como arquivo do projeto: com "Guardar como arquivo do projeto", a config vive também em
-// .goide/run/<nome>.json, para ir pelo git. O arquivo manda: ao listar, o que veio pelo git (novo ou mudado)
+// .prumo/run/<nome>.json, para ir pelo git. O arquivo manda: ao listar, o que veio pelo git (novo ou mudado)
 // entra no banco. Ids não vão para o arquivo; "outra configuração" antes de rodar vai pelo nome.
 
-const projectRunDir = ".goide/run"
+const projectRunDir = ".prumo/run"
+
+// legacyRunDir: onde ficavam antes da troca de nome. Continua sendo lida (está no git do usuário: não é
+// renomeada sozinha); as gravações vão para .prumo/run.
+const legacyRunDir = ".goide/run"
 
 // fileConfig é o formato do arquivo (sem id, projeto, uso e temporária).
 type fileConfig struct {
@@ -103,24 +107,41 @@ func removeProjectFile(o *workspace.Open, name string) {
 // syncProjectFiles traz para o banco as configs dos arquivos (novas ou mudadas pelo git).
 // Arquivos inválidos ficam de fora e vão na lista de problemas, sem impedir as outras.
 func (r *RunConfigs) syncProjectFiles(o *workspace.Open) []string {
-	entries, err := os.ReadDir(runDir(o))
-	if err != nil {
+	type entry struct{ dir, name string }
+	var entries []entry
+	seen := map[string]bool{}
+	for _, dir := range []string{runDir(o), filepath.Join(o.RootPath, filepath.FromSlash(legacyRunDir))} {
+		list, err := os.ReadDir(dir)
+		if err != nil {
+			continue
+		}
+		for _, e := range list {
+			if !seen[e.Name()] { // a pasta nova manda quando as duas têm o mesmo arquivo
+				seen[e.Name()] = true
+				entries = append(entries, entry{dir, e.Name()})
+			}
+		}
+	}
+	if len(entries) == 0 {
 		return nil
 	}
 	ctx := context.Background()
 	var problems []string
 	var files []fileConfig
 	for _, e := range entries {
-		if e.IsDir() || !strings.HasSuffix(e.Name(), ".json") {
+		if !strings.HasSuffix(e.name, ".json") {
 			continue
 		}
-		b, err := os.ReadFile(filepath.Join(runDir(o), e.Name()))
+		if st, err := os.Stat(filepath.Join(e.dir, e.name)); err != nil || st.IsDir() {
+			continue
+		}
+		b, err := os.ReadFile(filepath.Join(e.dir, e.name))
 		var f fileConfig
 		if err == nil {
 			err = json.Unmarshal(b, &f)
 		}
 		if err != nil || strings.TrimSpace(f.Name) == "" {
-			problems = append(problems, e.Name()+": arquivo inválido")
+			problems = append(problems, e.name+": arquivo inválido")
 			continue
 		}
 		files = append(files, f)

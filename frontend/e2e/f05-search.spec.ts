@@ -4,7 +4,7 @@ import type { Page } from '@playwright/test'
 
 const everywhere = (page: Page) => page.getByRole('dialog', { name: 'Buscar em tudo' })
 const findDlg = (page: Page) => page.getByRole('dialog', { name: /nos arquivos$/ })
-const cursorLine = (page: Page) => page.evaluate(() => (window as any).__goideEditor.getPosition().lineNumber as number)
+const cursorLine = (page: Page) => page.evaluate(() => (window as any).__prumoEditor.getPosition().lineNumber as number)
 const activeTab = (page: Page, name: string) => expect(page.getByRole('tab', { name: new RegExp(`^${name.replace('.', '\\.')}(, não salvo)?$`) })).toHaveAttribute('aria-selected', 'true')
 
 async function doubleShift(page: Page) {

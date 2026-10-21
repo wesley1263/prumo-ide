@@ -24,7 +24,7 @@ test('backend em inglês: fixas, com variáveis, embrulhadas e várias linhas', 
 const INTERNAS = [
   /^(criar diretório do banco|ler versão do schema|migração)/,
   /^(URI não é file|Content-Length inválido|linha de (status|renome|conflito) inválida|a ponte só pode)/,
-  /^(goide: troca de branch|Olá, mundo!|método ausente no binding)/,
+  /^(prumo: troca de branch|Olá, mundo!|método ausente no binding)/,
   // Vem no fluxo do PTY, direto para o terminal (não passa pela API): fica em português. Ver build-log.
   /\[processo encerrado com código/,
 ]

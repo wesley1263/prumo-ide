@@ -1,4 +1,4 @@
-module goide
+module prumo
 
 go 1.26.0
 

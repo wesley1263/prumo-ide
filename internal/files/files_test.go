@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 func setup(t *testing.T) (*Files, string, string) {

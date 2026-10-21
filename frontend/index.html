@@ -3,10 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="data:," />
-    <title>goide</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Prumo</title>
+    <style>
+      /* Tela de abertura: HTML e CSS puros, para aparecer antes do JavaScript (o pacote do app é grande).
+         Cores fixas do tema escuro (color.dark.* dos tokens), as mesmas do fundo da janela nativa: sem piscar.
+         Sai com src/splash.ts quando o backend responde. */
+      html, body { margin: 0; height: 100%; background: #1d1e21; }
+      #splash {
+        position: fixed; inset: 0; z-index: 2147483647;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px;
+        background: #1d1e21; color: #dcdee2;
+        font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, sans-serif;
+        transition: opacity 320ms ease-out;
+      }
+      #splash.out { opacity: 0; pointer-events: none; }
+      #splash .splash-mark { position: relative; width: 132px; height: 132px; }
+      #splash .splash-ring {
+        position: absolute; inset: 0; border-radius: 50%;
+        border: 3px solid #383a3f; border-top-color: #9cbf3b; border-right-color: #9cbf3b;
+        animation: splash-spin 1s cubic-bezier(0.5, 0.15, 0.5, 0.85) infinite;
+      }
+      #splash svg { position: absolute; inset: 22px; width: 88px; height: 88px; }
+      #splash .splash-name { font-size: 22px; font-weight: 600; letter-spacing: 0.02em; }
+      @keyframes splash-spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) {
+        #splash .splash-ring { animation-duration: 3s; animation-timing-function: linear; }
+        #splash { transition-duration: 1ms; }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash" role="status" aria-live="polite" aria-label="Prumo">
+      <div class="splash-mark">
+        <div class="splash-ring" aria-hidden="true"></div>
+        <svg viewBox="0 0 1024 1024" aria-hidden="true">
+          <line x1="512" y1="96" x2="512" y2="318" stroke="#dcdee2" stroke-width="22" stroke-linecap="round" />
+          <circle cx="512" cy="96" r="28" fill="none" stroke="#dcdee2" stroke-width="20" />
+          <rect x="456" y="306" width="112" height="64" rx="18" fill="#7f9c2c" />
+          <path d="M398 392 H626 C688 444 690 540 640 618 L548 848 Q512 924 476 848 L384 618 C334 540 336 444 398 392 Z" fill="#9cbf3b" />
+          <path d="M430 428 C404 470 404 540 438 606 L496 754 C474 640 456 520 470 428 Z" fill="#c6e07a" opacity="0.55" />
+        </svg>
+      </div>
+      <div class="splash-name">Prumo</div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

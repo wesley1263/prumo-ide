@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"goide/internal/events"
+	"prumo/internal/events"
 )
 
 func TestCloneLocalAndErrors(t *testing.T) {

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 func TestRunConfigsAsProjectFiles(t *testing.T) {
@@ -33,7 +33,7 @@ func TestRunConfigsAsProjectFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	b, err := os.ReadFile(filepath.Join(root, ".goide", "run", "App_ servidor.json"))
+	b, err := os.ReadFile(filepath.Join(root, ".prumo", "run", "App_ servidor.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,7 +63,7 @@ func TestRunConfigsAsProjectFiles(t *testing.T) {
 
 	// Mudou no arquivo (pull): a lista traz a mudança.
 	s := strings.Replace(string(b), "-port 8080", "-port 9090", 1)
-	os.WriteFile(filepath.Join(root, ".goide", "run", "App_ servidor.json"), []byte(s), 0o644)
+	os.WriteFile(filepath.Join(root, ".prumo", "run", "App_ servidor.json"), []byte(s), 0o644)
 	list, _ = NewRunConfigs(db2, reg2).List(p2.ID)
 	for _, c := range list {
 		if c.Name == "App: servidor" && c.ProgramArgs != "-port 9090" {
@@ -74,16 +74,35 @@ func TestRunConfigsAsProjectFiles(t *testing.T) {
 	// Renomear troca o arquivo; desmarcar e apagar tiram do projeto.
 	app.Name = "App"
 	app, _ = rc.Save(p.ID, app)
-	if _, err := os.Stat(filepath.Join(root, ".goide", "run", "App_ servidor.json")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(root, ".prumo", "run", "App_ servidor.json")); !os.IsNotExist(err) {
 		t.Fatal("o arquivo do nome antigo deveria sair")
 	}
 	app.StoreAsProjectFile = false
 	rc.Save(p.ID, app)
-	if _, err := os.Stat(filepath.Join(root, ".goide", "run", "App.json")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(root, ".prumo", "run", "App.json")); !os.IsNotExist(err) {
 		t.Fatal("desmarcar tira o arquivo")
 	}
 	rc.Delete(p.ID, gera.ID)
-	if _, err := os.Stat(filepath.Join(root, ".goide", "run", "Gera.json")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(root, ".prumo", "run", "Gera.json")); !os.IsNotExist(err) {
 		t.Fatal("apagar tira o arquivo")
 	}
 }
+
+func TestRunConfigsLegacyFolderStillRead(t *testing.T) {
+	ctx := context.Background()
+	root := t.TempDir()
+	os.WriteFile(filepath.Join(root, "go.mod"), []byte("module demo\n\ngo 1.22\n"), 0o644)
+	os.MkdirAll(filepath.Join(root, "cmd", "app"), 0o755)
+	os.MkdirAll(filepath.Join(root, ".goide", "run"), 0o755)
+	os.WriteFile(filepath.Join(root, ".goide", "run", "Antiga.json"), []byte(`{"name":"Antiga","type":"go_build","runKind":"directory","directory":"cmd/app","runAfterBuild":true,"useBuildTags":true}`), 0o644)
+	db, _ := store.Open(ctx, filepath.Join(t.TempDir(), "s.db"))
+	defer db.Close()
+	p, _ := db.TouchProject(ctx, root, "demo")
+	reg := workspace.NewRegistry(db)
+	reg.Add(ctx, p)
+	list, err := NewRunConfigs(db, reg).List(p.ID)
+	if err != nil || len(list) != 1 || list[0].Name != "Antiga" {
+		t.Fatalf("a config da pasta antiga (.goide/run) deveria entrar: %+v %v", list, err)
+	}
+}
+

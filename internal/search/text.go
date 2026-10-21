@@ -16,9 +16,9 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"goide/internal/events"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // Options é o que o usuário marcou no diálogo "Buscar nos arquivos".

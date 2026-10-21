@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strings"
 
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // RunConfigs é o serviço de configurações exposto à UI.
@@ -24,7 +24,7 @@ func NewRunConfigs(db *store.DB, reg *workspace.Registry) *RunConfigs {
 	return &RunConfigs{db: db, reg: reg}
 }
 
-// List devolve as configs do projeto (antes, traz as que estão em .goide/run).
+// List devolve as configs do projeto (antes, traz as que estão em .prumo/run).
 func (r *RunConfigs) List(projectID string) ([]store.RunConfig, error) {
 	o, err := r.reg.Get(projectID)
 	if err != nil {

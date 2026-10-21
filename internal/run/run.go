@@ -14,10 +14,10 @@ import (
 	"sync"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/proc"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/proc"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // OutputLimit é quanto de saída cada execução guarda (o resto vai sendo descartado do início).

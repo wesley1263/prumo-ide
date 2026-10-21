@@ -88,7 +88,7 @@ function apply(m: monaco.editor.ITextModel) {
       range: new monaco.Range(Math.min(b.line, m.getLineCount()), 1, Math.min(b.line, m.getLineCount()), 1),
       options: {
         // Faixa própria na margem de glifos (a da esquerda é do ▶ de rodar).
-        glyphMarginClassName: b.mnemonic ? `goide-bookmark goide-bookmark-m goide-bm-${b.mnemonic}` : 'goide-bookmark',
+        glyphMarginClassName: b.mnemonic ? `prumo-bookmark prumo-bookmark-m prumo-bm-${b.mnemonic}` : 'prumo-bookmark',
         glyphMargin: { position: monaco.editor.GlyphMarginLane.Right },
         glyphMarginHoverMessage: { value: `Bookmark${b.mnemonic ? ' ' + b.mnemonic : ''}${b.description ? ': ' + b.description : ''}` },
         stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
@@ -121,10 +121,10 @@ function follow(m: monaco.editor.ITextModel) {
 
 // Os mnemônicos aparecem dentro da marca: uma regra por caractere.
 function mnemonicCss() {
-  if (document.getElementById('goide-bm-css')) return
+  if (document.getElementById('prumo-bm-css')) return
   const st = document.createElement('style')
-  st.id = 'goide-bm-css'
-  st.textContent = MNEMONICS.map((c) => `.goide-bm-${c}::after{content:'${c}'}`).join('\n')
+  st.id = 'prumo-bm-css'
+  st.textContent = MNEMONICS.map((c) => `.prumo-bm-${c}::after{content:'${c}'}`).join('\n')
   document.head.appendChild(st)
 }
 

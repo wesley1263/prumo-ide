@@ -6,7 +6,7 @@ import { chromium } from 'playwright-core'
 import { mkdirSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-const BASE = process.env.GOIDE_URL ?? 'http://127.0.0.1:5173'
+const BASE = process.env.PRUMO_URL ?? 'http://127.0.0.1:5173'
 const OUT = resolve('../replica/clone-screens')
 const FIXTURE = resolve('../.fixtures/demo-shop')
 const CHROME = ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'].find(existsSync)
@@ -82,7 +82,7 @@ try {
 
   await step('S04 editor com gopls pronto', async () => {
     await page.getByText('gopls pronto').waitFor({ timeout: 60000 })
-    await page.locator('.goide-run-glyph').first().waitFor()
+    await page.locator('.prumo-run-glyph').first().waitFor()
     await shot('S04')
   })
 
@@ -128,7 +128,7 @@ try {
   })
 
   await step('S13 rodar pelo gutter', async () => {
-    await page.locator('.goide-run-glyph').first().click()
+    await page.locator('.prumo-run-glyph').first().click()
     await page.getByRole('log').getByText('Total: R$ 93,90').waitFor({ timeout: 60000 })
     await page.getByRole('log').getByText(/código 0/).waitFor({ timeout: 10000 })
     await shot('S13')

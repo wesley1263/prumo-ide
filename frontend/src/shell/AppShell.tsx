@@ -414,7 +414,7 @@ export function AppShell() {
     ])
     const offKeys = installKeymap()
     const onShow = (e: Event) => L().show((e as CustomEvent<string>).detail)
-    window.addEventListener('goide:show-toolwindow', onShow)
+    window.addEventListener('prumo:show-toolwindow', onShow)
 
     // Shift duas vezes (sem outra tecla no meio): Buscar em tudo. Digitar "AB" não conta.
     let lastShift = 0
@@ -434,7 +434,7 @@ export function AppShell() {
     return () => {
       off()
       offKeys()
-      window.removeEventListener('goide:show-toolwindow', onShow)
+      window.removeEventListener('prumo:show-toolwindow', onShow)
       window.removeEventListener('keyup', onShiftUp, true)
       window.removeEventListener('keydown', onOtherKey, true)
     }

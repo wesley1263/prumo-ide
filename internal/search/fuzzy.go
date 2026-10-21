@@ -44,7 +44,7 @@ func extOf(path string) string {
 }
 
 // matchRunes casa q em p a partir de from: guloso, mas preferindo inícios de palavra quando há escolha.
-// Maiúscula na consulta pede início de palavra (como no GoLand: "US" acha UserService antes de users).
+// Maiúscula na consulta pede início de palavra ("US" acha UserService antes de users).
 func matchRunes(q, p []rune, from int) (int, []int, bool) {
 	if len(q) == 0 {
 		return 0, nil, true

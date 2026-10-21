@@ -17,7 +17,7 @@ test.afterEach(async () => {
   for (const [k, v] of Object.entries(defaults)) {
     await fetch(`${API}/rpc`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Goide-Token': token() },
+      headers: { 'Content-Type': 'application/json', 'X-Prumo-Token': token() },
       body: JSON.stringify({ method: 'Settings.Set', args: [k, v] }),
     })
   }
@@ -88,7 +88,7 @@ test.describe('F28 configurações', () => {
     await size.fill('17')
     await dlg(page).getByRole('button', { name: 'OK' }).click()
     await expect(dlg(page)).toBeHidden()
-    await expect.poll(() => page.evaluate(() => (window as any).__goideEditor.getRawOptions().fontSize)).toBe(17)
+    await expect.poll(() => page.evaluate(() => (window as any).__prumoEditor.getRawOptions().fontSize)).toBe(17)
   })
 
   test('F28-H4 formatar ao salvar desligado: Ctrl+S grava como está', async ({ page, fx }) => {
@@ -100,7 +100,7 @@ test.describe('F28 configurações', () => {
     await dlg(page).getByRole('button', { name: 'OK' }).click()
     await expect(dlg(page)).toBeHidden() // o diálogo devolve o foco ao fechar: só depois focar o editor
     await page.evaluate(() => {
-      const ed = (window as any).__goideEditor
+      const ed = (window as any).__prumoEditor
       const m = ed.getModel()
       ed.setPosition({ lineNumber: m.getLineCount(), column: 1 })
       ed.focus()

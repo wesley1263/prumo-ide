@@ -319,7 +319,7 @@ function Form({ cfg, problems: p, update, others }: { cfg: Draft; problems: Reco
         <TextInput id="rc-name" value={cfg.name} onChange={(v) => update({ name: v })} error={p.name} />
       </Field>
       {!cfg.temporary && (
-        <Field id="rc-share" label={t('Compartilhar')} hint={cfg.storeAsProjectFile ? t('Fica em .goide/run/ no projeto: vai pelo git para quem clonar.') : undefined}>
+        <Field id="rc-share" label={t('Compartilhar')} hint={cfg.storeAsProjectFile ? t('Fica em .prumo/run/ no projeto: vai pelo git para quem clonar.') : undefined}>
           <Checkbox isSelected={cfg.storeAsProjectFile} onChange={(v) => update({ storeAsProjectFile: v })}>
             {t('Guardar como arquivo do projeto')}
           </Checkbox>

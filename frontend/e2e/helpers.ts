@@ -64,7 +64,7 @@ export const test = base.extend<{ guard: void; fx: Fixture }>({
     { auto: true },
   ],
   fx: async ({}, use) => {
-    const base = mkdtempSync(join(tmpdir(), 'goide-e2e-'))
+    const base = mkdtempSync(join(tmpdir(), 'prumo-e2e-'))
     await use(new Fixture(base))
     await closeProjectsUnder(base)
     rmSync(base, { recursive: true, force: true })
@@ -77,7 +77,7 @@ async function closeProjectsUnder(base: string) {
   const call = async (method: string, args: unknown[]) => {
     const r = await fetch(`${API}/rpc`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Goide-Token': token() },
+      headers: { 'Content-Type': 'application/json', 'X-Prumo-Token': token() },
       body: JSON.stringify({ method, args }),
     })
     return (await r.json()).result
@@ -118,14 +118,14 @@ const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
 /** Texto do editor ativo (via gancho de teste do modo dev). */
 export function editorValue(page: Page): Promise<string> {
-  return page.evaluate(() => (window as any).__goideEditor.getModel()?.getValue() ?? '')
+  return page.evaluate(() => (window as any).__prumoEditor.getModel()?.getValue() ?? '')
 }
 
 /** Põe o cursor logo depois (ou antes) da primeira ocorrência de `text` e foca o editor. */
 export async function cursorAt(page: Page, text: string, where: 'after' | 'before' = 'after') {
   await page.evaluate(
     ([t, w]) => {
-      const ed = (window as any).__goideEditor
+      const ed = (window as any).__prumoEditor
       const m = ed.getModel()
       const off = m.getValue().indexOf(t)
       if (off < 0) throw new Error('texto não encontrado no editor: ' + t)

@@ -22,9 +22,9 @@ import (
 	"sync"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/proc"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/proc"
+	"prumo/internal/workspace"
 )
 
 // Conn é uma conexão de cliente (uma aba de UI). Cada mensagem é um objeto JSON-RPC inteiro.
@@ -136,9 +136,9 @@ func (h *Hub) stopIfSame(projectID string, s *server) {
 	s.shutdown()
 }
 
-// idleTimeout é quanto o gopls espera, sem nenhuma UI conectada, antes de sair (GOIDE_LSP_IDLE, ex.: "200ms").
+// idleTimeout é quanto o gopls espera, sem nenhuma UI conectada, antes de sair (PRUMO_LSP_IDLE, ex.: "200ms").
 func idleTimeout() time.Duration {
-	if d, err := time.ParseDuration(os.Getenv("GOIDE_LSP_IDLE")); err == nil && d > 0 {
+	if d, err := time.ParseDuration(os.Getenv("PRUMO_LSP_IDLE")); err == nil && d > 0 {
 		return d
 	}
 	return 30 * time.Second
@@ -289,7 +289,7 @@ func startServer(o *workspace.Open, exe string, h *Hub) (*server, error) {
 	cmd.Env = o.GoEnv(nil)
 	cmd.SysProcAttr = proc.Attr(false)
 	cmd.Stderr = io.Discard
-	if os.Getenv("GOIDE_LSP_DEBUG") != "" {
+	if os.Getenv("PRUMO_LSP_DEBUG") != "" {
 		cmd.Stderr = os.Stderr
 	}
 	stdin, err := cmd.StdinPipe()
@@ -369,7 +369,7 @@ func (s *server) initialize() {
 	rootURI := PathToURI(s.root)
 	params := map[string]any{
 		"processId":             os.Getpid(),
-		"clientInfo":            map[string]string{"name": "goide", "version": "0.1"},
+		"clientInfo":            map[string]string{"name": "prumo", "version": "0.1"},
 		"rootUri":               rootURI,
 		"workspaceFolders":      []map[string]string{{"uri": rootURI, "name": filepath.Base(s.root)}},
 		"capabilities":          clientCapabilities(),

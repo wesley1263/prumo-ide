@@ -28,7 +28,7 @@ function applyBreakpoints(m: Model, all: Breakpoint[]) {
   const decos = mine.map((b) => ({
     range: new monaco.Range(live[b.id] ?? b.line!, 1, live[b.id] ?? b.line!, 1),
     options: {
-      lineNumberClassName: muted || !b.enabled ? 'goide-bp goide-bp-off' : b.condition || b.logMessage ? 'goide-bp goide-bp-cond' : 'goide-bp',
+      lineNumberClassName: muted || !b.enabled ? 'prumo-bp prumo-bp-off' : b.condition || b.logMessage ? 'prumo-bp prumo-bp-cond' : 'prumo-bp',
       lineNumberHoverMessage: {
         value: muted
           ? t('Breakpoint (silenciado)')
@@ -64,7 +64,7 @@ function applyExecLine(m: Model) {
     m.deltaDecorations(
       old,
       line
-        ? [{ range: new monaco.Range(line, 1, line, 1), options: { isWholeLine: true, className: 'goide-exec-line', linesDecorationsClassName: 'goide-exec-arrow' } }]
+        ? [{ range: new monaco.Range(line, 1, line, 1), options: { isWholeLine: true, className: 'prumo-exec-line', linesDecorationsClassName: 'prumo-exec-arrow' } }]
         : [],
     ),
   )

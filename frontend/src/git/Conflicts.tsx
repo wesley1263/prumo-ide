@@ -250,7 +250,7 @@ function ThreeWay({ input, title, close }: { input: MergeInput; title: React.Rea
       ed.createDecorationsCollection(
         hunks
           .filter((h) => h.kind !== 'deleted')
-          .map((h) => ({ range: new monaco.Range(h.start, 1, h.start + h.count - 1, 1), options: { isWholeLine: true, className: 'goide-merge-changed' } })),
+          .map((h) => ({ range: new monaco.Range(h.start, 1, h.start + h.count - 1, 1), options: { isWholeLine: true, className: 'prumo-merge-changed' } })),
       )
     }
     return () => {
@@ -420,7 +420,7 @@ function rangeOf(m: monaco.editor.ITextModel, start: number, end: number) {
 
 function conflictDeco(resolved: boolean): monaco.editor.IModelDecorationOptions {
   return {
-    className: resolved ? 'goide-merge-resolved' : 'goide-merge-conflict',
+    className: resolved ? 'prumo-merge-resolved' : 'prumo-merge-conflict',
     isWholeLine: true,
     // Conflito vazio (as duas versões adicionaram, base vazia) ainda precisa aparecer e crescer ao digitar nele.
     showIfCollapsed: true,
