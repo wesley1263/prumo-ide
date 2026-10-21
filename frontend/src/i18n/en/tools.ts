@@ -285,4 +285,21 @@ export const tools: Record<string, string> = {
   navegar: 'navigate',
   abrir: 'open',
   fechar: 'close',
+
+  // Mensagem de commit com IA (git/CommitAgent.tsx)
+  'comando personalizado': 'custom command',
+  'Marque os arquivos do commit primeiro': 'Select the files for the commit first',
+  'Mensagem escrita pelo {agent}': 'Message written by {agent}',
+  'Revise antes de commitar.': 'Review it before committing.',
+  'Desfazer': 'Undo',
+  'Não foi possível gerar a mensagem': 'Could not generate the message',
+  'Gerar a mensagem com {agent}': 'Generate the message with {agent}',
+  'Nenhum agente de IA encontrado (Configurações → Ferramentas)': 'No AI agent found (Settings → Tools)',
+  '{agent} está escrevendo a mensagem': '{agent} is writing the message',
+  'Cancelar a geração': 'Cancel generation',
+  'Gerar a mensagem com {agent}?': 'Generate the message with {agent}?',
+  'O diff dos arquivos marcados vai para a {vendor}, pelo {agent} instalado na sua máquina, com a sua conta.': 'The diff of the selected files goes to {vendor}, through the {agent} installed on your machine, with your account.',
+  'O diff dos arquivos marcados vai para o comando {agent}, com a sua conta.': 'The diff of the selected files goes to the {agent} command, with your account.',
+  'Só acontece quando você clica. O agente roda sem ferramentas, fora do projeto: ele só escreve a mensagem, e você revisa antes de commitar.': 'It only happens when you click. The agent runs without tools, outside the project: it only writes the message, and you review it before committing.',
+  'Não perguntar de novo': 'Don’t ask again',
 }

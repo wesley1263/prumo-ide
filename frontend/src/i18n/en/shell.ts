@@ -298,4 +298,22 @@ export const shell: Record<string, string> = {
   // design/feedback.tsx
   Fechar: 'Close',
   'Carregando o Prumo…': 'Loading Prumo…',
+
+  // Mensagens de commit com IA (Configurações → Ferramentas)
+  'Mensagens de commit com IA': 'AI commit messages',
+  'O botão ✨ no Commit pede a mensagem ao agente de IA instalado na sua máquina, com o diff só do que está marcado. Nada é enviado sem você clicar.': 'The ✨ button in Commit asks the AI agent installed on your machine for the message, with the diff of the selected changes only. Nothing is sent until you click.',
+  'Agente': 'Agent',
+  'Agente para mensagens de commit': 'Agent for commit messages',
+  'Automático (o primeiro instalado)': 'Automatic (the first one installed)',
+  '{name} (não instalado)': '{name} (not installed)',
+  'Comando personalizado': 'Custom command',
+  'Desligado': 'Off',
+  'Agentes encontrados': 'Agents found',
+  'Comando do agente': 'Agent command',
+  'Programa e argumentos. O pedido, com o diff, vai pela entrada padrão; a resposta é a mensagem.': 'Program and arguments. The request, with the diff, goes to standard input; the reply is the message.',
+  'Idioma da mensagem': 'Message language',
+  'O mesmo dos commits recentes': 'Same as the recent commits',
+  'Instruções extras': 'Extra instructions',
+  'Ex.: "use Conventional Commits", "cite o número da tarefa da branch".': 'E.g. "use Conventional Commits", "mention the task number from the branch".',
+  'Perguntar antes de enviar o diff ao agente': 'Ask before sending the diff to the agent',
 }

@@ -202,6 +202,14 @@ export interface SdkDownload {
   error?: string
   goroot?: string
 }
+/** Agente de IA de linha de comando (Claude Code, Codex, Gemini CLI) para mensagens de commit. */
+export interface AgentInfo {
+  id: string
+  name: string
+  vendor: string
+  path: string
+  available: boolean
+}
 export interface Worktree {
   path: string
   branch: string
@@ -559,6 +567,7 @@ export const api = {
   },
   Tools: {
     Status: () => call<ToolsStatus>('Tools.Status'),
+    Agents: () => call<AgentInfo[]>('Tools.Agents'),
     Install: (name: 'gopls' | 'dlv') => call<string>('Tools.Install', name),
   },
   Files: {
@@ -605,6 +614,9 @@ export const api = {
     Log: (projectId: string, filter: LogFilter, limit: number) => call<LogPage>('Git.Log', projectId, filter, limit),
     CommitDetails: (projectId: string, hash: string) => call<CommitDetails>('Git.CommitDetails', projectId, hash),
     CommitDiff: (projectId: string, hash: string, path: string, oldPath = '') => call<DiffContents>('Git.CommitDiff', projectId, hash, path, oldPath),
+    SuggestCommitMessage: (projectId: string, req: { files: string[]; partial: Record<string, string>; uiLang: string }) =>
+      call<{ message: string; agent: string }>('Git.SuggestCommitMessage', projectId, req),
+    CancelSuggest: (projectId: string) => call<void>('Git.CancelSuggest', projectId),
     CompareBranches: (projectId: string, other: string) => call<BranchCompare>('Git.CompareBranches', projectId, other),
     RebaseCommits: (projectId: string, base: string) => call<LogCommit[]>('Git.RebaseCommits', projectId, base),
     InteractiveRebase: (projectId: string, base: string, steps: RebaseStep[]) => call<OpResult>('Git.InteractiveRebase', projectId, base, steps),

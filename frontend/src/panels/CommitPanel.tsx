@@ -5,6 +5,7 @@ import { ContextMenu } from '../design/ContextMenu'
 import { lineDiff, type Hunk } from '../editor/lineDiff'
 import { fileState, hunkState, isPartial, partialContent, setHunk, setLine, type Chunks } from '../git/partial'
 import { useStashUi } from '../git/Stash'
+import { CommitAgentButton } from '../git/CommitAgent'
 import { api, type FileChange } from '../lib/api'
 import { Button, Checkbox, IconButton, Menu, TextArea, TextField } from '../design/controls'
 import { Banner, Dialog, EmptyState, Spinner, toast } from '../design/feedback'
@@ -115,6 +116,16 @@ export function CommitPanel() {
   const prefs = usePrefs()
   const [vetProblem, setVetProblem] = useState<{ output: string; thenPush: boolean; what: 'vet' | 'tests' } | null>(null)
   const history = useCommitHistory((s) => s.messages)
+
+  // Para o agente de IA: o mesmo recorte do commit (arquivos marcados, trechos e linhas), com o editor salvo.
+  const agentRequest = async () => {
+    await saveAll({ format: false })
+    const toCommit = selectedFiles.filter((p) => !chunks[p] || fileState(chunks[p]) !== 'off')
+    if (toCommit.length === 0) return null
+    const partial: Record<string, string> = {}
+    for (const p of toCommit) if (chunks[p] && isPartial(chunks[p])) partial[p] = partialContent(chunks[p])
+    return { files: toCommit, partial }
+  }
 
   const commit = async (thenPush = false, skipChecks = false) => {
     if (!canCommit) return
@@ -459,16 +470,17 @@ export function CommitPanel() {
                 {t('Rodar os testes dos pacotes')}
               </Checkbox>
             </div>
-            {history.length > 0 && (
-              <div className="flex justify-end">
+            <div className="flex justify-end gap-0.5">
+              <CommitAgentButton projectId={project.id} trusted={project.trusted} request={agentRequest} message={message} onMessage={setMessage} askTrust={askTrust} />
+              {history.length > 0 && (
                 <Menu
                   label={t('Mensagens recentes')}
                   trigger={<IconButton label={t('Mensagens recentes')} size="sm" icon={<History className="size-icon-sm" />} />}
                   items={history.map((m, i) => ({ id: String(i), label: m.split('\n')[0].slice(0, 80) }))}
                   onAction={(id) => setMessage(history[Number(id)])}
                 />
-              </div>
-            )}
+              )}
+            </div>
             <TextArea
               label={t('Mensagem do commit')}
               hideLabel

@@ -13,6 +13,7 @@ import { Button, Checkbox } from '../design/controls'
 import { Banner, Dialog, ProgressBar, Spinner, toast } from '../design/feedback'
 import { cn } from '../design/cn'
 import { fold } from '../search/state'
+import { useAgents } from '../git/CommitAgent'
 
 type PageId = 'appearance' | 'editor' | 'keymap' | 'go' | 'tools' | 'terminal'
 
@@ -24,7 +25,7 @@ const PAGES: Array<{ id: PageId; title: string; keywords: string[] }> = [
   { id: 'editor', title: t('Editor'), keywords: ['fonte', 'tamanho', 'formatar', 'salvar', 'imports', 'gofmt', 'dicas', 'inlay', 'parâmetros'] },
   { id: 'keymap', title: t('Atalhos'), keywords: ['teclado', 'keymap', 'atalho'] },
   { id: 'go', title: 'Go', keywords: ['sdk', 'goroot', 'versão', 'go'] },
-  { id: 'tools', title: t('Ferramentas'), keywords: ['gopls', 'delve', 'dlv', 'git', 'ripgrep', 'instalar', 'depurador'] },
+  { id: 'tools', title: t('Ferramentas'), keywords: ['gopls', 'delve', 'dlv', 'git', 'ripgrep', 'instalar', 'depurador', 'ia', 'ai', 'agente', 'claude', 'codex', 'gemini', 'commit'] },
   { id: 'terminal', title: t('Terminal'), keywords: ['shell', 'bash', 'zsh', 'fish'] },
 ]
 
@@ -570,6 +571,7 @@ function ToolsPage({ q }: { q: string }) {
   }
   if (!status) return <Spinner label={t('Procurando ferramentas')} />
   return (
+    <>
     <ul className="flex flex-col">
       {TOOLS.map((tl) => {
         const tool = status[tl.key]
@@ -592,5 +594,90 @@ function ToolsPage({ q }: { q: string }) {
         )
       })}
     </ul>
+    <AgentSettings q={q} />
+    </>
+  )
+}
+
+/** Mensagens de commit com IA: qual agente da máquina usar, idioma e instruções. Grava na hora. */
+function AgentSettings({ q }: { q: string }) {
+  const prefs = usePrefs()
+  const agents = useAgents((s) => s.list)
+  const [command, setCommand] = useState(prefs['commit.agentCommand'])
+  const [instructions, setInstructions] = useState(prefs['commit.agentInstructions'])
+  const [error, setError] = useState<string>()
+  useEffect(() => void useAgents.getState().load(true), [])
+  const save = async (changes: Partial<Prefs>) => {
+    setError(undefined)
+    try {
+      await savePrefs(changes)
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+  const choice = prefs['commit.agent']
+  const selectCls = 'h-control rounded-md border border-border-input bg-bg px-2 text-sm text-text outline-none focus:border-focus focus:ring-2 focus:ring-focus'
+  return (
+    <section aria-label={t('Mensagens de commit com IA')} className="mt-4 border-t border-border pt-3">
+      <h4 className="text-sm font-semibold text-text">
+        <Hl text={t('Mensagens de commit com IA')} q={q} />
+      </h4>
+      <p className="mt-1 text-xs text-text-muted">{t('O botão ✨ no Commit pede a mensagem ao agente de IA instalado na sua máquina, com o diff só do que está marcado. Nada é enviado sem você clicar.')}</p>
+      <Field label={t('Agente')} q={q} error={error}>
+        <select aria-label={t('Agente para mensagens de commit')} value={choice} onChange={(e) => void save({ 'commit.agent': e.target.value })} className={selectCls}>
+          <option value="auto">{t('Automático (o primeiro instalado)')}</option>
+          {(agents ?? []).map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.available ? a.name : t('{name} (não instalado)', { name: a.name })}
+            </option>
+          ))}
+          <option value="custom">{t('Comando personalizado')}</option>
+          <option value="off">{t('Desligado')}</option>
+        </select>
+        <ul aria-label={t('Agentes encontrados')} className="mt-1 flex flex-col gap-0.5">
+          {(agents ?? []).map((a) => (
+            <li key={a.id} className="flex items-center gap-2 text-xs">
+              {a.available ? <CheckCircle2 className="size-icon-sm text-success" aria-label={t('encontrado')} /> : <XCircle className="size-icon-sm text-text-subtle" aria-label={t('não encontrado')} />}
+              <span className="text-text">{a.name}</span>
+              <span className="truncate font-mono text-text-muted">{a.available ? a.path : t('não encontrado')}</span>
+            </li>
+          ))}
+        </ul>
+      </Field>
+      {choice === 'custom' && (
+        <Field label={t('Comando do agente')} q={q} hint={t('Programa e argumentos. O pedido, com o diff, vai pela entrada padrão; a resposta é a mensagem.')}>
+          <input
+            aria-label={t('Comando do agente')}
+            value={command}
+            onChange={(e) => setCommand(e.target.value)}
+            onBlur={() => command !== prefs['commit.agentCommand'] && void save({ 'commit.agentCommand': command.trim() })}
+            onKeyDown={(e) => e.key === 'Enter' && void save({ 'commit.agentCommand': command.trim() })}
+            placeholder="ex.: /usr/local/bin/meu-agente --modo commit"
+            spellCheck={false}
+            className={cn(selectCls, 'font-mono')}
+          />
+        </Field>
+      )}
+      <Field label={t('Idioma da mensagem')} q={q}>
+        <select aria-label={t('Idioma da mensagem')} value={prefs['commit.agentLanguage']} onChange={(e) => void save({ 'commit.agentLanguage': e.target.value })} className={selectCls}>
+          <option value="auto">{t('O mesmo dos commits recentes')}</option>
+          <option value="pt-BR">Português (Brasil)</option>
+          <option value="en">English</option>
+        </select>
+      </Field>
+      <Field label={t('Instruções extras')} q={q} hint={t('Ex.: "use Conventional Commits", "cite o número da tarefa da branch".')}>
+        <textarea
+          aria-label={t('Instruções extras')}
+          value={instructions}
+          rows={2}
+          onChange={(e) => setInstructions(e.target.value)}
+          onBlur={() => instructions !== prefs['commit.agentInstructions'] && void save({ 'commit.agentInstructions': instructions })}
+          className={cn(selectCls, 'h-auto py-1')}
+        />
+      </Field>
+      <Checkbox isSelected={!prefs['commit.agentConsent']} onChange={(v) => void save({ 'commit.agentConsent': !v })}>
+        {t('Perguntar antes de enviar o diff ao agente')}
+      </Checkbox>
+    </section>
   )
 }

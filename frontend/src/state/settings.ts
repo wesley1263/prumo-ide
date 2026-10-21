@@ -13,6 +13,11 @@ export interface Prefs {
   'commit.vet': boolean // go vet nos pacotes do commit
   'commit.tests': boolean // go test nos pacotes do commit
   'keymap.overrides': Record<string, string> // ação → atalho trocado pelo usuário ("" = sem atalho)
+  'commit.agent': string // agente de IA da mensagem de commit: auto | claude | codex | gemini | custom | off
+  'commit.agentCommand': string // comando do agente quando "custom" (o pedido vai pela entrada padrão)
+  'commit.agentLanguage': string // auto (o dos commits recentes) | pt-BR | en
+  'commit.agentInstructions': string // instruções extras para o agente
+  'commit.agentConsent': boolean // já confirmou que o diff vai para o provedor do agente
 }
 
 export const DEFAULTS: Prefs = {
@@ -24,6 +29,11 @@ export const DEFAULTS: Prefs = {
   'commit.vet': false,
   'commit.tests': false,
   'keymap.overrides': {},
+  'commit.agent': 'auto',
+  'commit.agentCommand': '',
+  'commit.agentLanguage': 'auto',
+  'commit.agentInstructions': '',
+  'commit.agentConsent': false,
 }
 
 export const usePrefs = create<Prefs>(() => ({ ...DEFAULTS }))

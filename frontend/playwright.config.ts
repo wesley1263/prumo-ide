@@ -25,10 +25,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'ide', testIgnore: /f28-settings|f28-english|f12-checks/ },
+    { name: 'ide', testIgnore: /f28-settings|f28-english|f12-checks|f12-agent/ },
     // As configurações são do app inteiro (não do projeto): rodam sozinhas, depois de tudo, para não
     // mudar o tema, a fonte ou o "formatar ao salvar" de um teste que esteja rodando ao lado.
-    { name: 'configuracoes', testMatch: /f28-settings|f28-english|f12-checks/, dependencies: ['ide'], fullyParallel: false, workers: 1 },
+    { name: 'configuracoes', testMatch: /f28-settings|f28-english|f12-checks|f12-agent/, dependencies: ['ide'], fullyParallel: false, workers: 1 },
   ],
   webServer: [
     {
