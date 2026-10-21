@@ -79,11 +79,11 @@ export async function toggleBlame(editor: monaco.editor.ICodeEditor) {
       return {
         range: new monaco.Range(i + 1, 1, i + 1, 1),
         options: {
-          description: 'goide-blame',
+          description: 'prumo-blame',
           showIfCollapsed: true, // intervalo vazio no começo da linha: sem isso o Monaco não desenha o texto
           before: {
             content: label(c),
-            inlineClassName: `goide-blame goide-blame-age-${c.pending ? 'pending' : ageClass(c.date)}`,
+            inlineClassName: `prumo-blame prumo-blame-age-${c.pending ? 'pending' : ageClass(c.date)}`,
             cursorStops: monaco.editor.InjectedTextCursorStops.None,
             attachedData: c.hash,
           },

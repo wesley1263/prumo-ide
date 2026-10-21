@@ -1,4 +1,4 @@
-// Live templates (como os do GoLand): uma abreviação no começo da linha vira um snippet com Tab entre os campos.
+// Live templates: uma abreviação no começo da linha vira um snippet com Tab entre os campos.
 // Postfix (x.print, x.var, x.for, err.nn…) já vem do gopls, nas sugestões depois do ponto.
 import { monaco } from './monaco'
 import { t } from '../i18n'

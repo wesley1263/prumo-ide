@@ -19,8 +19,8 @@ test.describe('F19 terminal', () => {
     await page.keyboard.press('Alt+F12')
     await expect(panel(page)).toBeVisible()
     await expect(tabs(page)).toHaveText(['Local'])
-    await run(page, 'echo "goide-$((40+2))"; pwd; echo "pid=$$"')
-    await expect.poll(() => screenText(page)).toContain('goide-42')
+    await run(page, 'echo "prumo-$((40+2))"; pwd; echo "pid=$$"')
+    await expect.poll(() => screenText(page)).toContain('prumo-42')
     const text = await screenText(page)
     expect(text).toContain(dir.split('/').pop()!)
     const pid = text.match(/pid=(\d+)/)![1]
@@ -33,7 +33,7 @@ test.describe('F19 terminal', () => {
     await page.keyboard.press('Alt+F12')
     await expect(panel(page)).toBeHidden()
     await page.keyboard.press('Alt+F12')
-    await expect.poll(() => screenText(page)).toContain('goide-42')
+    await expect.poll(() => screenText(page)).toContain('prumo-42')
     await run(page, 'echo "pid=$$ de novo"')
     await expect.poll(() => screenText(page)).toContain(`pid=${pid} de novo`)
     expect(await a11y(page)).toEqual([])
@@ -61,7 +61,7 @@ test.describe('F19 terminal', () => {
     await page.mouse.up()
     await page.keyboard.up('Control')
     await expect(page.getByRole('tab', { name: 'main.go' })).toHaveAttribute('aria-selected', 'true')
-    await expect.poll(() => page.evaluate(() => (window as any).__goideEditor.getPosition().lineNumber)).toBe(12)
+    await expect.poll(() => page.evaluate(() => (window as any).__prumoEditor.getPosition().lineNumber)).toBe(12)
 
     // Shell que sai: a aba fica marcada como encerrada, com o código.
     await page.keyboard.press('Alt+F12')

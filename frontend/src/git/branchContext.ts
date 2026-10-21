@@ -1,5 +1,5 @@
 // Contexto por branch: ao trocar de branch, as abas abertas ficam guardadas na que saiu e as da que entrou
-// voltam (como o "restaurar o contexto" do GoLand). Fica no estado do projeto. Os breakpoints valem para todas.
+// voltam. Fica no estado do projeto. Os breakpoints valem para todas.
 import { create } from 'zustand'
 import { useApp } from '../state/app'
 import { tabKeyOf, useDocs } from '../editor/docs'

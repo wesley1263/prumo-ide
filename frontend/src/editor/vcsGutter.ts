@@ -29,7 +29,7 @@ function render(m: monaco.editor.ITextModel) {
     return {
       range: new monaco.Range(line, 1, end, 1),
       options: {
-        linesDecorationsClassName: `goide-vcs goide-vcs-${h.kind}`,
+        linesDecorationsClassName: `prumo-vcs prumo-vcs-${h.kind}`,
         overviewRuler: { color: h.kind === 'added' ? 'var(--color-vcs-added)' : h.kind === 'modified' ? 'var(--color-vcs-modified)' : 'var(--color-vcs-deleted)', position: monaco.editor.OverviewRulerLane.Left },
       },
     }

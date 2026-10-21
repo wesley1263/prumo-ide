@@ -75,7 +75,7 @@ export function SplitEditor() {
       ariaLabel: t('Editor da direita'),
     })
     ed.current = e
-    if (import.meta.env.DEV) (window as unknown as { __goideSplitEditor?: unknown }).__goideSplitEditor = e
+    if (import.meta.env.DEV) (window as unknown as { __prumoSplitEditor?: unknown }).__prumoSplitEditor = e
     e.onDidFocusEditorText(() => setFocusedEditor(e))
     e.onDidBlurEditorText(() => void useDocs.getState().autosave())
     return () => {

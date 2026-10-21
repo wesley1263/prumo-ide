@@ -1,4 +1,4 @@
-// Command goide é a IDE desktop (Wails v2).
+// Command prumo é a IDE desktop (Wails v2).
 //
 // Linux: precisa de libgtk-3-dev e libwebkit2gtk-4.1-dev; compile com -tags webkit2_41.
 //
@@ -16,8 +16,8 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 	wruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
-	"goide/internal/app"
-	"goide/internal/events"
+	"prumo/internal/app"
+	"prumo/internal/events"
 )
 
 //go:embed all:frontend/dist
@@ -35,7 +35,7 @@ func main() {
 	}
 
 	err = wails.Run(&options.App{
-		Title:            "goide",
+		Title:            "Prumo",
 		Width:            1440,
 		Height:           900,
 		MinWidth:         800,

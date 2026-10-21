@@ -64,8 +64,8 @@ function paint(m: monaco.editor.ITextModel) {
         .map(([l, s]) => ({
           range: new monaco.Range(l, 1, l, 1),
           options: {
-            description: 'goide-coverage',
-            linesDecorationsClassName: `goide-cov goide-cov-${s}`,
+            description: 'prumo-coverage',
+            linesDecorationsClassName: `prumo-cov prumo-cov-${s}`,
             linesDecorationsTooltip: s === 'full' ? t('Coberto pelos testes') : s === 'none' ? t('Não coberto') : t('Coberto em parte'),
           },
         }))

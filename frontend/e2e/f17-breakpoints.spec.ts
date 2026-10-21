@@ -10,12 +10,12 @@ const dlg = (page: Page) => page.getByRole('dialog', { name: 'Breakpoints' })
 async function setBreakpoint(page: Page) {
   await openFile(page, 'internal/cart/cart.go')
   await lineNumber(page, bpLine).click()
-  await expect(page.locator('.goide-bp')).toHaveCount(1)
+  await expect(page.locator('.prumo-bp')).toHaveCount(1)
 }
 
 async function debugMain(page: Page) {
   await openFile(page, 'cmd/shop/main.go')
-  await page.locator('.goide-run-glyph').first().click({ button: 'right' })
+  await page.locator('.prumo-run-glyph').first().click({ button: 'right' })
   await page.getByRole('menu', { name: 'Rodar ou depurar' }).getByRole('menuitem', { name: /^Depurar( |$)/ }).click()
 }
 
@@ -33,7 +33,7 @@ test.describe('S17 breakpoints', () => {
     await dlg(page).getByLabel('Condição').fill('l.Product.SKU == "CAN-02"')
     await saved
     await dlg(page).getByRole('button', { name: 'Pronto' }).click()
-    await expect(page.locator('.goide-bp-cond')).toHaveCount(1)
+    await expect(page.locator('.prumo-bp-cond')).toHaveCount(1)
 
     await debugMain(page)
     await expect(dbg(page).getByText(/parado \(breakpoint\)/)).toBeVisible({ timeout: 90_000 })
@@ -65,13 +65,13 @@ test.describe('S17 breakpoints', () => {
     await page.keyboard.press('Control+Shift+F8')
     await dlg(page).getByRole('checkbox', { name: 'Silenciar todos' }).click({ force: true })
     await dlg(page).getByRole('button', { name: 'Pronto' }).click()
-    await expect(page.locator('.goide-bp-off')).toHaveCount(1)
+    await expect(page.locator('.prumo-bp-off')).toHaveCount(1)
 
     await debugMain(page)
     await expect(dbg(page).getByText(/encerrado/)).toBeVisible({ timeout: 90_000 })
 
     await dbg(page).getByRole('button', { name: 'Silenciar breakpoints' }).click()
-    await expect(page.locator('.goide-bp-off')).toHaveCount(0)
+    await expect(page.locator('.prumo-bp-off')).toHaveCount(0)
     await debugMain(page)
     await expect(dbg(page).getByText(/parado \(breakpoint\)/)).toBeVisible({ timeout: 90_000 })
   })

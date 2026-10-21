@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"goide/internal/events"
+	"prumo/internal/events"
 )
 
 type calc struct{}

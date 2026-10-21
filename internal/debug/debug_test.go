@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/run"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/run"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 func find(name string) string {

@@ -6,9 +6,9 @@ import (
 	"os/exec"
 	"strings"
 
-	"goide/internal/proc"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/proc"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // beforeLaunch roda as tarefas da config, na ordem, com a saída no console desta execução.

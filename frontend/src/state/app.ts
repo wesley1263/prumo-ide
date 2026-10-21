@@ -96,7 +96,7 @@ export const useApp = create<AppState>((set, get) => ({
         get().refreshGit()
         // Comando do go (sem config): go.mod, go.sum ou arquivos gerados mudaram.
         if (!info.configId) {
-          window.dispatchEvent(new CustomEvent('goide:refresh-tree'))
+          window.dispatchEvent(new CustomEvent('prumo:refresh-tree'))
           void useDocs.getState().reloadFromDisk()
         }
       }

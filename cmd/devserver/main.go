@@ -3,7 +3,7 @@
 //	go run ./cmd/devserver            # porta 7788, token em frontend/.dev-token
 //	cd frontend && npm run dev        # http://localhost:5173
 //
-// Usa uma pasta de dados separada (goide-dev) para não misturar com o app instalado.
+// Usa uma pasta de dados separada (prumo-dev) para não misturar com o app instalado.
 package main
 
 import (
@@ -16,13 +16,13 @@ import (
 	"strings"
 	"syscall"
 
-	"goide/internal/app"
+	"prumo/internal/app"
 )
 
 func main() {
 	addr := flag.String("addr", "127.0.0.1:7788", "endereço da ponte (só loopback)")
 	tokenFile := flag.String("token-file", "frontend/.dev-token", "onde gravar o token para o Vite")
-	dataDir := flag.String("data", "", "pasta de dados (padrão: <config>/goide-dev)")
+	dataDir := flag.String("data", "", "pasta de dados (padrão: <config>/prumo-dev)")
 	origins := flag.String("origins", "http://localhost:5173,http://127.0.0.1:5173", "Origins da UI aceitas, separadas por vírgula")
 	flag.Parse()
 
@@ -31,6 +31,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		app.MigrateDir(base, app.LegacyName+"-dev", app.Name+"-dev")
 		*dataDir = filepath.Join(base, app.Name+"-dev")
 	}
 	ctx := context.Background()

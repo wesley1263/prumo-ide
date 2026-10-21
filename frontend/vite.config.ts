@@ -5,9 +5,9 @@ import { fileURLToPath } from 'node:url'
 
 // Modo dev: o backend roda em `go run ./cmd/devserver` e grava o token em .dev-token.
 // A UI fala com ele por /bridge (proxy), igual fala com a ponte local dentro do app.
-const tokenFile = process.env.GOIDE_TOKEN_FILE ?? '.dev-token'
+const tokenFile = process.env.PRUMO_TOKEN_FILE ?? '.dev-token'
 const devToken = existsSync(tokenFile) ? readFileSync(tokenFile, 'utf8').trim() : ''
-const devserver = process.env.GOIDE_DEVSERVER ?? 'http://127.0.0.1:7788'
+const devserver = process.env.PRUMO_DEVSERVER ?? 'http://127.0.0.1:7788'
 
 export default defineConfig({
   plugins: [react()],
@@ -21,7 +21,7 @@ export default defineConfig({
     __DEV_TOKEN__: JSON.stringify(devToken),
   },
   server: {
-    port: Number(process.env.GOIDE_VITE_PORT ?? 5173),
+    port: Number(process.env.PRUMO_VITE_PORT ?? 5173),
     strictPort: true,
     fs: { allow: ['..'] }, // tokens em ../replica/design
     proxy: {
@@ -33,7 +33,7 @@ export default defineConfig({
         configure: (proxy) => {
           const inject = (req: { setHeader: (k: string, v: string) => void }) => {
             const tok = existsSync(tokenFile) ? readFileSync(tokenFile, 'utf8').trim() : ''
-            if (tok) req.setHeader('X-Goide-Token', tok)
+            if (tok) req.setHeader('X-Prumo-Token', tok)
           }
           proxy.on('proxyReq', inject)
           proxy.on('proxyReqWs', inject)

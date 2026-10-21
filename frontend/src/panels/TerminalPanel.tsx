@@ -79,7 +79,7 @@ export function TerminalPanel() {
     useTerms.setState((s) => ({ list: rest, active: s.active === id ? (rest.at(-1)?.id ?? null) : s.active }))
   }
 
-  // Carrega os terminais do projeto e, como no GoLand, abre um se não houver nenhum.
+  // Carrega os terminais do projeto e, como nas IDEs desktop, abre um se não houver nenhum.
   useEffect(() => {
     let alive = true
     void refresh(project.id).then((l) => {
@@ -183,7 +183,7 @@ function TerminalView({ info, visible, onNew }: { info: TermInfo; visible: boole
     })
     const f = new FitAddon()
     t.loadAddon(f)
-    // arquivo.go:linha abre no editor (Ctrl+clique, como no GoLand); URLs abrem no navegador.
+    // arquivo.go:linha abre no editor (Ctrl+clique); URLs abrem no navegador.
     t.loadAddon(new WebLinksAddon((e, uri) => (e.ctrlKey || e.metaKey) && window.open(uri, '_blank', 'noopener')))
     t.registerLinkProvider({
       provideLinks(y, callback) {

@@ -1,0 +1,23 @@
+{
+  "name": "Prumo",
+  "avoid": [
+    "GoLand",
+    "JetBrains",
+    "IntelliJ",
+    "Junie",
+    "Darcula",
+    "Gopher"
+  ],
+  "domains": [
+    "jetbrains.com",
+    "go.dev/brand"
+  ],
+  "colors": [
+    "#00ADD8",
+    "#5DC9E2",
+    "#3574F0",
+    "#2a7881",
+    "#5ec5d0",
+    "#1f6f78"
+  ]
+}

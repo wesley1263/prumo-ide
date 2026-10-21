@@ -68,7 +68,7 @@ export const useBranchCompare = create<{ other: string | null }>(() => ({ other:
 /** Depois que o git mudou arquivos: relê o editor, a árvore e o status. */
 export async function afterDiskChange() {
   await useDocs.getState().reloadFromDisk()
-  window.dispatchEvent(new CustomEvent('goide:refresh-tree'))
+  window.dispatchEvent(new CustomEvent('prumo:refresh-tree'))
   await useApp.getState().refreshGit()
 }
 

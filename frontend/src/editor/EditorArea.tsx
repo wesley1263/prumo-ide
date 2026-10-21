@@ -160,7 +160,7 @@ const keyOfModel = (m: monaco.editor.ITextModel) => Object.values(useDocs.getSta
 function runTarget(key: string, t: RunTarget, mode: 'run' | 'debug' | 'coverage') {
   if (mode === 'debug') return void useDebug.getState().startFile(key, t.test)
   useApp.getState().runFile(key, t.test, { coverage: mode === 'coverage' })
-  window.dispatchEvent(new CustomEvent('goide:show-toolwindow', { detail: t.test || t.pkg ? 'tests' : 'run' }))
+  window.dispatchEvent(new CustomEvent('prumo:show-toolwindow', { detail: t.test || t.pkg ? 'tests' : 'run' }))
 }
 
 export function EditorArea() {
@@ -205,7 +205,7 @@ export function EditorArea() {
     })
     editorRef = ed
     // Gancho para os testes e2e (só no modo dev; some do build de produção).
-    if (import.meta.env.DEV) (window as unknown as { __goideEditor?: unknown }).__goideEditor = ed
+    if (import.meta.env.DEV) (window as unknown as { __prumoEditor?: unknown }).__prumoEditor = ed
     ed.onDidChangeCursorSelection((e) => {
       const m = ed.getModel()
       useCursor.setState({
@@ -219,14 +219,14 @@ export function EditorArea() {
     ed.onDidFocusEditorText(() => setFocusedEditor(ed))
     // Anotar (git blame) e histórico do arquivo, no menu de contexto do editor.
     ed.addAction({
-      id: 'goide.annotate',
+      id: 'prumo.annotate',
       label: t('Anotar com git blame (liga/desliga)'),
       contextMenuGroupId: '9_vcs',
       contextMenuOrder: 1,
       run: (e) => void toggleBlame(e),
     })
     ed.addAction({
-      id: 'goide.fileHistory',
+      id: 'prumo.fileHistory',
       label: t('Histórico do arquivo (git)'),
       contextMenuGroupId: '9_vcs',
       contextMenuOrder: 2,
@@ -284,9 +284,9 @@ export function EditorArea() {
       setGutterMenu({ x: e.event.posx, y: e.event.posy, key, target: t })
     })
     const onFocus = () => ed.focus()
-    window.addEventListener('goide:focus-editor', onFocus)
+    window.addEventListener('prumo:focus-editor', onFocus)
     return () => {
-      window.removeEventListener('goide:focus-editor', onFocus)
+      window.removeEventListener('prumo:focus-editor', onFocus)
       editorRef = null
       setFocusedEditor(null, ed)
       ed.dispose()
@@ -324,7 +324,7 @@ export function EditorArea() {
           runTargets(model).map((r) => ({
             range: new monaco.Range(r.line, 1, r.line, 1),
             options: {
-              glyphMarginClassName: 'goide-run-glyph',
+              glyphMarginClassName: 'prumo-run-glyph',
               glyphMarginHoverMessage: { value: (r.test ? t('Rodar {name}', { name: r.test }) : r.pkg ? t('Rodar os testes do pacote') : t('Rodar este programa')) + t(' · botão direito para depurar') },
             },
           })),

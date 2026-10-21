@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"goide/internal/proc"
+	"prumo/internal/proc"
 )
 
 // ---------------------------------------------------------------- conflitos (S25, S26)
@@ -150,7 +150,7 @@ func mergeFile(ctx context.Context, gitExe, ours, base, theirs string) (string, 
 	if gitExe == "" {
 		return "", 0, errors.New("git não encontrado")
 	}
-	dir, err := os.MkdirTemp("", "goide-merge-*")
+	dir, err := os.MkdirTemp("", "prumo-merge-*")
 	if err != nil {
 		return "", 0, err
 	}

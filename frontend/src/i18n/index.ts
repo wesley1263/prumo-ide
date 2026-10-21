@@ -6,7 +6,7 @@
 export type Lang = 'pt-BR' | 'en'
 export type LangPref = 'system' | Lang
 
-const STORE = 'goide.language'
+const STORE = 'prumo.language'
 
 /** "system" segue o sistema: português → pt-BR, qualquer outro → inglês. */
 export function resolveLang(pref: LangPref, nav = typeof navigator !== 'undefined' ? navigator.language : 'pt-BR'): Lang {

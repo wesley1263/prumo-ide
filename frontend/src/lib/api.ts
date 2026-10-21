@@ -59,7 +59,7 @@ async function call<T>(method: string, ...args: unknown[]): Promise<T> {
   }
   const res = await fetch('/bridge/rpc', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Goide-Token': __DEV_TOKEN__ },
+    headers: { 'Content-Type': 'application/json', 'X-Prumo-Token': __DEV_TOKEN__ },
     body: JSON.stringify({ method, args }),
   }).catch(() => {
     throw new ApiError(method, 'backend fora do ar: rode `go run ./cmd/devserver`')
@@ -697,7 +697,7 @@ export function writeOnUnload(projectId: string, path: string, content: string, 
   void fetch('/bridge/rpc', {
     method: 'POST',
     keepalive: true, // o navegador limita a ~64 KB por página: arquivos maiores dependem do autosave por ociosidade
-    headers: { 'Content-Type': 'application/json', 'X-Goide-Token': __DEV_TOKEN__ },
+    headers: { 'Content-Type': 'application/json', 'X-Prumo-Token': __DEV_TOKEN__ },
     body: JSON.stringify({ method: 'Files.Write', args }),
   }).catch(() => {})
 }

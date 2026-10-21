@@ -83,7 +83,7 @@ async function generateTest(t: Target) {
   }
   if (!exists) {
     await api.Files.Write(pid, testKey, `package ${pkg}\n\nimport "testing"\n${body}`, 0)
-    window.dispatchEvent(new CustomEvent('goide:refresh-tree'))
+    window.dispatchEvent(new CustomEvent('prumo:refresh-tree'))
   } else {
     const model = await docs.ensureModel(monaco.Uri.file(docs.root + '/' + testKey).toString())
     if (!model) return

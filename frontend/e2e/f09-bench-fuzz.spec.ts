@@ -34,9 +34,9 @@ test('F09-H6 benchmark e fuzz pelo ▶ do gutter', async ({ page, fx }) => {
   fx.write(dir, 'internal/cart/bench_test.go', BENCH)
   await openProject(page, dir)
   await openFile(page, 'internal/cart/bench_test.go')
-  await page.locator('.goide-run-glyph').nth(1).click() // [0] = package, [1] = BenchmarkTotal
+  await page.locator('.prumo-run-glyph').nth(1).click() // [0] = package, [1] = BenchmarkTotal
   await expect(results(page).getByRole('treeitem', { name: /^BenchmarkTotal, passou, \d+× · [\d.]+ ns\/op · \d+ B\/op/ })).toBeVisible({ timeout: 90_000 })
 
-  await page.locator('.goide-run-glyph').nth(2).click() // FuzzAdd
+  await page.locator('.prumo-run-glyph').nth(2).click() // FuzzAdd
   await expect(results(page).getByRole('treeitem', { name: /^FuzzAdd, passou, elapsed: \d+s, execs: \d+/ })).toBeVisible({ timeout: 120_000 })
 })

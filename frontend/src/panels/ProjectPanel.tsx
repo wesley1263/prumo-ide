@@ -74,8 +74,8 @@ export function ProjectPanel() {
     const onRefresh = () => {
       for (const dir of expandedRef.current) load(dir)
     }
-    window.addEventListener('goide:refresh-tree', onRefresh)
-    return () => window.removeEventListener('goide:refresh-tree', onRefresh)
+    window.addEventListener('prumo:refresh-tree', onRefresh)
+    return () => window.removeEventListener('prumo:refresh-tree', onRefresh)
   }, [load])
 
   const refresh = () => {

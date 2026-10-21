@@ -3,7 +3,7 @@ import { test, expect, openProject, openFile, cursorAt, mod } from './helpers'
 import type { Page } from '@playwright/test'
 
 const activeTab = (page: Page, name: string) => expect(page.getByRole('tab', { name, exact: true })).toHaveAttribute('aria-selected', 'true')
-const line = (page: Page) => page.evaluate(() => (window as any).__goideEditor.getPosition().lineNumber as number)
+const line = (page: Page) => page.evaluate(() => (window as any).__prumoEditor.getPosition().lineNumber as number)
 
 test('F04-H8 voltar/avançar e locais recentes', async ({ page, fx }) => {
   await openProject(page, fx.seed())

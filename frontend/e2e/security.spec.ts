@@ -5,7 +5,7 @@ import { test, expect, API, token } from './helpers'
 const rpc = (request: import('@playwright/test').APIRequestContext, method: string, args: unknown[], headers: Record<string, string> = {}) =>
   request.post(`${API}/rpc`, {
     data: { method, args },
-    headers: { 'Content-Type': 'application/json', 'X-Goide-Token': token(), ...headers },
+    headers: { 'Content-Type': 'application/json', 'X-Prumo-Token': token(), ...headers },
   })
 
 test.describe('SEC ponte local', () => {
@@ -20,7 +20,7 @@ test.describe('SEC ponte local', () => {
   })
 
   test('SEC-3 corpo que não é JSON (form de outro site): recusado', async ({ request }) => {
-    const r = await request.post(`${API}/rpc`, { form: { method: 'Projects.ListRecent' }, headers: { 'X-Goide-Token': token() } })
+    const r = await request.post(`${API}/rpc`, { form: { method: 'Projects.ListRecent' }, headers: { 'X-Prumo-Token': token() } })
     expect(r.status()).toBe(415)
   })
 

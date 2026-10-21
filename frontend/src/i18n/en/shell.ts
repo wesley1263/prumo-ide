@@ -203,7 +203,7 @@ export const shell: Record<string, string> = {
   'Abrir projeto': 'Open Project',
   'Não foi possível abrir': 'Could not open',
   'Novo projeto': 'New Project',
-  'IDE para Go · versão de desenvolvimento': 'Go IDE · development build',
+  'IDE para Go feita de peças abertas · em desenvolvimento': 'A Go IDE built from open parts · in development',
   'Tela inicial': 'Welcome screen',
   'Usar tema claro': 'Use light theme',
   'Usar tema escuro': 'Use dark theme',

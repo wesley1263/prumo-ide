@@ -1,4 +1,4 @@
-// Chamadas recursivas: um ↻ na margem da linha que chama a própria função (como no GoLand).
+// Chamadas recursivas: um ↻ na margem da linha que chama a própria função.
 // O candidato vem do texto (o nome da função dentro do corpo dela) e é confirmado pelo "ir para a definição"
 // do gopls, que descarta nomes sombreados, closures com o mesmo nome e métodos de outro tipo.
 import { monaco } from './monaco'
@@ -38,7 +38,7 @@ async function scan(m: monaco.editor.ITextModel) {
       decor.get(uri) ?? [],
       [...lines].map((l) => ({
         range: new monaco.Range(l, 1, l, 1),
-        options: { glyphMarginClassName: 'goide-recursion', glyphMargin: { position: monaco.editor.GlyphMarginLane.Center }, glyphMarginHoverMessage: { value: t('Chamada recursiva') } },
+        options: { glyphMarginClassName: 'prumo-recursion', glyphMargin: { position: monaco.editor.GlyphMarginLane.Center }, glyphMarginHoverMessage: { value: t('Chamada recursiva') } },
       })),
     ),
   )

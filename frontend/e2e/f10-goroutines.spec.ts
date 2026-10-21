@@ -19,7 +19,7 @@ test('F10-H5 goroutines agrupadas: 3 workers, runtime escondido, filtro e troca 
   await openProject(page, dir)
   await openFile(page, 'cmd/pool/main.go')
   await page.locator('.monaco-editor .line-numbers').filter({ hasText: /^23$/ }).click()
-  await page.locator('.goide-run-glyph').first().click({ button: 'right' })
+  await page.locator('.prumo-run-glyph').first().click({ button: 'right' })
   await page.getByRole('menu', { name: 'Rodar ou depurar' }).getByRole('menuitem', { name: /^Depurar( |$)/ }).click()
   await expect(dbg(page).getByText(/parado \(breakpoint\)/)).toBeVisible({ timeout: 90_000 })
 

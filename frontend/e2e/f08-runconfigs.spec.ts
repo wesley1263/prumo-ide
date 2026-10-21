@@ -132,7 +132,7 @@ test.describe('S12 configurações de execução', () => {
 
   test('S12-H6 guardar como arquivo do projeto; o arquivo que chega pelo git aparece na lista', async ({ page, fx }) => {
     const dir = fx.seed()
-    fx.write(dir, '.goide/run/Do colega.json', JSON.stringify({ name: 'Do colega', type: 'go_build', runKind: 'directory', directory: 'cmd/shop', runAfterBuild: true, useBuildTags: true, programArgs: '-v' }))
+    fx.write(dir, '.prumo/run/Do colega.json', JSON.stringify({ name: 'Do colega', type: 'go_build', runKind: 'directory', directory: 'cmd/shop', runAfterBuild: true, useBuildTags: true, programArgs: '-v' }))
     await openProject(page, dir)
     await openDialog(page)
     await expect(list(page).getByRole('option', { name: /^Do colega/ })).toBeVisible()
@@ -140,10 +140,10 @@ test.describe('S12 configurações de execução', () => {
     await dlg(page).getByLabel('Nome').fill('Minha')
     await dlg(page).getByRole('textbox', { name: 'Pasta', exact: true }).fill('cmd/shop')
     await dlg(page).getByRole('checkbox', { name: 'Guardar como arquivo do projeto' }).click({ force: true })
-    await expect(dlg(page)).toContainText('Fica em .goide/run/')
+    await expect(dlg(page)).toContainText('Fica em .prumo/run/')
     await dlg(page).getByRole('button', { name: 'OK' }).click()
     await expect(dlg(page)).toBeHidden()
-    const saved = JSON.parse(fx.read(dir, '.goide/run/Minha.json'))
+    const saved = JSON.parse(fx.read(dir, '.prumo/run/Minha.json'))
     expect(saved).toMatchObject({ name: 'Minha', directory: 'cmd/shop' })
     expect(saved.id).toBeUndefined()
   })
@@ -151,7 +151,7 @@ test.describe('S12 configurações de execução', () => {
   test('S12-H3 temporária do gutter vira permanente; duplicar; apagar; Cancelar descarta', async ({ page, fx }) => {
     await openProject(page, fx.seed())
     await openFile(page, 'cmd/shop/main.go')
-    await page.locator('.goide-run-glyph').first().click()
+    await page.locator('.prumo-run-glyph').first().click()
     await expect(log(page).getByText('Total: R$ 93,90')).toBeVisible({ timeout: 60_000 })
     await openDialog(page)
     await expect(list(page).getByRole('option', { name: 'go build cmd/shop, temporária' })).toHaveAttribute('aria-selected', 'true')

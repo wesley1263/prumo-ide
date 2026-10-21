@@ -16,10 +16,10 @@ import (
 	"sync"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/proc"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/proc"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // TestNode é um pacote (Name vazio), um teste ou um subteste ("TestA/caso_1").

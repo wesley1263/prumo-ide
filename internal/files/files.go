@@ -12,7 +12,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"goide/internal/workspace"
+	"prumo/internal/workspace"
 )
 
 // MaxEditableBytes: acima disso o arquivo abre read-only e sem LSP.

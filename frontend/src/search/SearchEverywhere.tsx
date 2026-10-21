@@ -180,7 +180,7 @@ function Body({ tab }: { tab: EverywhereTab }) {
     const cap = (g: Item['group'], n: number) => (tab === 'all' ? Math.min(n, ALL_LIMIT[g]) : n)
     if (wantFiles) {
       if (!q) {
-        // Vazio: arquivos recentes (o atual por último, como no GoLand: o mais útil é voltar ao anterior).
+        // Vazio: arquivos recentes (o atual por último: o mais útil é voltar ao anterior).
         const active = useDocs.getState().active
         const keys = [...recent.filter((k) => k !== active), ...recent.filter((k) => k === active)]
         for (const k of keys.slice(0, cap('files', 30))) out.push(fileItem(k, [], () => openFile(k)))

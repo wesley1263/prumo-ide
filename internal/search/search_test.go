@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/files"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/files"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // setup cria um projeto com os arquivos dados e devolve o serviço e o id.

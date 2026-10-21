@@ -47,7 +47,7 @@ test('F03-H12 menu do botão direito no editor é legível nos dois temas', asyn
     if (theme === 'light') {
       await page.evaluate(async () => {
         document.documentElement.dataset.theme = 'light'
-        ;(await import('/src/editor/monaco.ts')).monaco.editor.setTheme('goide-light')
+        ;(await import('/src/editor/monaco.ts')).monaco.editor.setTheme('prumo-light')
       })
     }
     const { bg, fg } = await menuColors(page)

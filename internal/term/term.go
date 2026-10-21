@@ -17,10 +17,10 @@ import (
 
 	"github.com/creack/pty"
 
-	"goide/internal/events"
-	"goide/internal/run"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/run"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // HistoryBytes é quanto da saída de cada terminal fica guardado para reconexões.
@@ -127,7 +127,7 @@ func (m *Manager) Create(projectID, shell string, cols, rows int) (Info, error) 
 	cmd.Env = o.GoEnv(map[string]string{
 		"TERM":         "xterm-256color",
 		"COLORTERM":    "truecolor",
-		"TERM_PROGRAM": "goide",
+		"TERM_PROGRAM": "prumo",
 	})
 	cmd.SysProcAttr = sysProcAttr()
 	f, err := pty.StartWithAttrs(cmd, size(cols, rows), cmd.SysProcAttr)

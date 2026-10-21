@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"goide/internal/events"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // syncFixture: um remoto bare, o clone do usuário (aberto na IDE) e um clone de "outra pessoa".

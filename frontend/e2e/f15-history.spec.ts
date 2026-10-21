@@ -86,9 +86,9 @@ test.describe('F15 histórico do git', () => {
     await openProject(page, dir)
     await openFile(page, 'internal/catalog/catalog.go')
     await runAction(page, 'Anotar com git blame')
-    const notes = page.locator('.monaco-editor .goide-blame')
+    const notes = page.locator('.monaco-editor .prumo-blame')
     await expect(notes.first()).toContainText(/[0-9a-f]{7}\sDemo/) // o Monaco desenha os espaços como &nbsp;
-    await expect(page.locator('.monaco-editor .goide-blame-age-pending').first()).toContainText(/não\scommitado/)
+    await expect(page.locator('.monaco-editor .prumo-blame-age-pending').first()).toContainText(/não\scommitado/)
 
     // Clicar na anotação da 1ª linha abre o commit dela no Log.
     await notes.first().click()

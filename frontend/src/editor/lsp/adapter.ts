@@ -364,7 +364,7 @@ export function attachLsp(
         const actions = await Promise.all(
           (r ?? []).map(async (a) => {
             if ('command' in a && typeof a.command === 'string') {
-              return { title: a.title, command: { id: 'goide.lsp.executeCommand', title: a.title, arguments: [a] } }
+              return { title: a.title, command: { id: 'prumo.lsp.executeCommand', title: a.title, arguments: [a] } }
             }
             const ca = a as LCodeAction
             return {
@@ -374,7 +374,7 @@ export function attachLsp(
               disabled: ca.disabled?.reason,
               diagnostics: ca.diagnostics?.map((d) => ({ ...toRange(d.range), message: d.message, severity: severity(d.severity) })),
               edit: ca.edit ? await toMonacoWorkspaceEdit(ca.edit) : undefined,
-              command: ca.command ? { id: 'goide.lsp.executeCommand', title: ca.command.title, arguments: [ca.command] } : undefined,
+              command: ca.command ? { id: 'prumo.lsp.executeCommand', title: ca.command.title, arguments: [ca.command] } : undefined,
               __lsp: ca,
             }
           }),
@@ -448,7 +448,7 @@ export function attachLsp(
 
   // Comandos do servidor (alguns quick-fixes do gopls são comandos que voltam como applyEdit).
   disposables.push(
-    monaco.editor.registerCommand('goide.lsp.executeCommand', (_acc, cmd: LCommand) => {
+    monaco.editor.registerCommand('prumo.lsp.executeCommand', (_acc, cmd: LCommand) => {
       req('workspace/executeCommand', { command: cmd.command, arguments: cmd.arguments })
     }),
   )

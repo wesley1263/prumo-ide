@@ -1,5 +1,5 @@
 // Capturas para o /replica-diff (não roda na suíte normal).
-//   GOIDE_SHOTS=1 npx playwright test parity-shots
+//   PRUMO_SHOTS=1 npx playwright test parity-shots
 // A referência do original é a ilustração pública do tour da interface (replica/screens/S03-original.png):
 // janela de ~1000x650 em 2x, tema claro, árvore recolhida, README.md aberto. A captura do clone imita esse estado.
 import { dirname, resolve } from 'node:path'
@@ -11,7 +11,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const SCREENS = resolve(__dirname, '../../replica/screens')
 const CLONE = resolve(__dirname, '../../replica/clone-screens')
 
-test.skip(!process.env.GOIDE_SHOTS, 'só para o /replica-diff')
+test.skip(!process.env.PRUMO_SHOTS, 'só para o /replica-diff')
 test.use({ viewport: { width: 1000, height: 648 }, deviceScaleFactor: 2 })
 
 test('S03 janela principal no estado da ilustração da documentação', async ({ page, fx }) => {
@@ -98,7 +98,7 @@ test('S24 log do git e S27 anotar', async ({ page, fx }) => {
   const se = page.getByRole('dialog', { name: 'Buscar em tudo' })
   await se.getByRole('combobox').fill('Anotar com git blame')
   await se.getByRole('combobox').press('Enter')
-  await expect(page.locator('.goide-blame').first()).toBeVisible()
+  await expect(page.locator('.prumo-blame').first()).toBeVisible()
   await page.keyboard.press('Alt+9')
   const grid = page.getByRole('grid', { name: 'Commits' })
   await grid.getByRole('row').filter({ hasText: 'merge feat/frete' }).click()
@@ -135,7 +135,7 @@ test('S26 merge em 3 painéis', async ({ page, fx }) => {
 test('S12 configurações de execução', async ({ page, fx }) => {
   await openProject(page, fx.seed())
   await openFile(page, 'cmd/shop/main.go')
-  await page.locator('.goide-run-glyph').first().click()
+  await page.locator('.prumo-run-glyph').first().click()
   await expect(page.getByRole('log').getByText('Total: R$ 93,90')).toBeVisible({ timeout: 60_000 })
   await page.getByRole('banner').getByRole('button', { name: /^Configuração: / }).click()
   await page.getByRole('menuitem', { name: 'Editar configurações…' }).click()
@@ -163,7 +163,7 @@ test('S09 usos e editor dividido', async ({ page, fx }) => {
   await page.getByRole('button', { name: 'Dividir à direita' }).click()
   await openFile(page, 'cmd/shop/main.go')
   await page.evaluate(() => {
-    const ed = (window as any).__goideSplitEditor
+    const ed = (window as any).__prumoSplitEditor
     const m = ed.getModel()
     ed.setPosition(m.getPositionAt(m.getValue().indexOf('func (c *Cart) Total') + 16))
     ed.focus()
@@ -190,7 +190,7 @@ test('S03 janela flutuante e diff unificado', async ({ page, fx }) => {
 test('S18 cobertura', async ({ page, fx }) => {
   await openProject(page, fx.seed())
   await openFile(page, 'internal/cart/cart_test.go')
-  await page.locator('.goide-run-glyph').first().click({ button: 'right' })
+  await page.locator('.prumo-run-glyph').first().click({ button: 'right' })
   await page.getByRole('menuitem', { name: 'Rodar os testes do pacote com cobertura' }).click()
   const panel = page.getByRole('region', { name: 'Cobertura' })
   await panel.getByRole('treeitem', { name: /^internal\/cart\/cart\.go/ }).dblclick({ timeout: 90_000 })

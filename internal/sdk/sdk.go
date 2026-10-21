@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"goide/internal/store"
-	"goide/internal/tools"
+	"prumo/internal/store"
+	"prumo/internal/tools"
 )
 
 // Sdks é o serviço exposto à UI.

@@ -15,7 +15,7 @@ import { t, tn } from '../i18n'
 const FrameContext = createContext<{ id: string; place: Place } | null>(null)
 export const ToolWindowHost = FrameContext.Provider
 
-const DRAG_TYPE = 'application/x-goide-toolwindow'
+const DRAG_TYPE = 'application/x-prumo-toolwindow'
 
 function StripeButton({ id }: { id: string }) {
   const tw = toolWindow(id)
@@ -152,7 +152,7 @@ export function ToolWindowFrame({ actions, children }: { side?: Side; actions?: 
       onKeyDown={(e) => {
         if (e.key === 'Escape' && e.shiftKey) {
           hideWindow(id)
-          window.dispatchEvent(new CustomEvent('goide:focus-editor'))
+          window.dispatchEvent(new CustomEvent('prumo:focus-editor'))
         }
       }}
       className="group/tw flex h-full min-h-0 min-w-0 flex-col bg-surface outline-none"

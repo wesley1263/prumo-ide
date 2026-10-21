@@ -36,14 +36,14 @@ export default defineConfig({
         `rm -rf ${RUN}/data ${RUN}/token && mkdir -p ${RUN} && (cd .. && go build -o frontend/${RUN}/devserver ./cmd/devserver) && ` +
         `${RUN}/devserver -addr 127.0.0.1:7799 -data ${RUN}/data -token-file ${RUN}/token -origins ${UI},http://localhost:5174`,
       url: `${API}/events`, // 401 sem token = no ar
-      env: { PATH, GOIDE_LSP_IDLE: '3s' }, // gopls sem UI conectada sai logo: a suíte abre ~90 projetos
+      env: { PATH, PRUMO_LSP_IDLE: '3s' }, // gopls sem UI conectada sai logo: a suíte abre ~90 projetos
       reuseExistingServer: false,
       timeout: 120_000,
     },
     {
       command: 'npx vite --host 127.0.0.1',
       url: UI,
-      env: { PATH, GOIDE_VITE_PORT: '5174', GOIDE_DEVSERVER: API, GOIDE_TOKEN_FILE: `${RUN}/token` },
+      env: { PATH, PRUMO_VITE_PORT: '5174', PRUMO_DEVSERVER: API, PRUMO_TOKEN_FILE: `${RUN}/token` },
       reuseExistingServer: false,
       timeout: 60_000,
     },

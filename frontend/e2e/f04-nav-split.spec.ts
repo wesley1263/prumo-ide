@@ -21,7 +21,7 @@ test.describe('F04 navegação e divisão', () => {
     await tree.focus()
     for (let i = 0; i < 8; i++) await page.keyboard.press('ArrowDown')
     await page.keyboard.press('Enter')
-    const line = await page.evaluate(() => (window as any).__goideEditor.getPosition().lineNumber)
+    const line = await page.evaluate(() => (window as any).__prumoEditor.getPosition().lineNumber)
     expect(fx.read(dir, 'internal/cart/cart.go').split('\n')[line - 1]).toContain('return total')
   })
 
@@ -33,7 +33,7 @@ test.describe('F04 navegação e divisão', () => {
     await cursorAt(page, 'func (c *Cart) Tot')
     await page.keyboard.press(`${mod}+u`)
     await expect(page.getByRole('tab', { name: 'totaler.go' })).toHaveAttribute('aria-selected', 'true', { timeout: 30_000 })
-    const line = await page.evaluate(() => (window as any).__goideEditor.getPosition().lineNumber)
+    const line = await page.evaluate(() => (window as any).__prumoEditor.getPosition().lineNumber)
     expect(line).toBe(5)
     // Num lugar sem interface: avisa.
     await openFile(page, 'cmd/shop/main.go')
@@ -71,7 +71,7 @@ test.describe('F04 navegação e divisão', () => {
     await expect(right.getByRole('tab', { name: 'cart.go' })).toHaveAttribute('aria-selected', 'true')
     // Digitar à direita aparece à esquerda (mesmo modelo).
     await page.evaluate(() => {
-      const ed = (window as any).__goideSplitEditor
+      const ed = (window as any).__prumoSplitEditor
       ed.setPosition({ lineNumber: 1, column: 1 })
       ed.focus()
     })
@@ -85,7 +85,7 @@ test.describe('F04 navegação e divisão', () => {
     expect(await a11y(page)).toEqual([])
     // Alt+F7 no editor da direita usa o arquivo dele.
     await page.evaluate(() => {
-      const ed = (window as any).__goideSplitEditor
+      const ed = (window as any).__prumoSplitEditor
       const m = ed.getModel()
       const off = m.getValue().indexOf('c.Total()')
       ed.setPosition(m.getPositionAt(off + 3))

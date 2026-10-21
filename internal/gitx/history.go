@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"goide/internal/workspace"
+	"prumo/internal/workspace"
 )
 
 // ---------------------------------------------------------------- log (S24)

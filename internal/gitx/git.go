@@ -16,8 +16,8 @@ import (
 	"sync"
 	"time"
 
-	"goide/internal/events"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/workspace"
 )
 
 // ErrNotRepo: o projeto não está dentro de um repositório git.
@@ -380,7 +380,7 @@ func (g *Git) lastCommit(ctx context.Context, top, projectID string) (CommitResu
 // está no disco) e, dos parciais, o conteúdo escolhido. O index de verdade só é alinhado ao novo HEAD nos
 // caminhos commitados: o que ficou de fora continua como mudança no disco.
 func (g *Git) commitPartial(ctx context.Context, o *workspace.Open, top string, specs []string, req CommitRequest, msg string) error {
-	tmp, err := os.CreateTemp("", "goide-index-*")
+	tmp, err := os.CreateTemp("", "prumo-index-*")
 	if err != nil {
 		return err
 	}

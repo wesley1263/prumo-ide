@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"goide/internal/workspace"
+	"prumo/internal/workspace"
 )
 
 // CoverBlock é um trecho do perfil de cobertura: linhas/colunas (1-based) e se rodou.

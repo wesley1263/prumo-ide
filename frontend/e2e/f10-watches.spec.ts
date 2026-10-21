@@ -9,7 +9,7 @@ const watches = (page: Page) => dbg(page).getByRole('list', { name: 'Watches' })
 
 async function debugMain(page: Page) {
   await openFile(page, 'cmd/shop/main.go')
-  await page.locator('.goide-run-glyph').first().click({ button: 'right' })
+  await page.locator('.prumo-run-glyph').first().click({ button: 'right' })
   await page.getByRole('menu', { name: 'Rodar ou depurar' }).getByRole('menuitem', { name: /^Depurar( |$)/ }).click()
   await expect(dbg(page).getByText(/parado \(breakpoint\)/)).toBeVisible({ timeout: 90_000 })
 }

@@ -6,7 +6,7 @@ import type { Page } from '@playwright/test'
 const setLanguage = (v: string) =>
   fetch(`${API}/rpc`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Goide-Token': token() },
+    headers: { 'Content-Type': 'application/json', 'X-Prumo-Token': token() },
     body: JSON.stringify({ method: 'Settings.Set', args: ['appearance.language', v] }),
   })
 
@@ -43,7 +43,7 @@ test('F28-H8 a IDE em inglês, inclusive as mensagens do backend', async ({ page
   // Rodar: as linhas de sistema do console (do backend) em inglês.
   for (const d of ['cmd', 'shop']) await tree.getByRole('treeitem', { name: d, exact: true }).click()
   await tree.getByRole('treeitem', { name: 'main.go', exact: true }).dblclick()
-  await page.locator('.goide-run-glyph').first().click()
+  await page.locator('.prumo-run-glyph').first().click()
   await expect(page.getByRole('log').first()).toContainText('Process finished with exit code 0.', { timeout: 90_000 })
 
   // Commit em inglês.

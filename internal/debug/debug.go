@@ -16,10 +16,10 @@ import (
 
 	"github.com/google/go-dap"
 
-	"goide/internal/events"
-	"goide/internal/run"
-	"goide/internal/store"
-	"goide/internal/workspace"
+	"prumo/internal/events"
+	"prumo/internal/run"
+	"prumo/internal/store"
+	"prumo/internal/workspace"
 )
 
 // Estados de uma sessão.
@@ -248,7 +248,7 @@ func (m *Manager) run(s *session, connect func() (net.Conn, error), start dap.Re
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute) // a compilação pode demorar
 	defer cancel()
 	if _, err := c.do(ctx, &dap.InitializeRequest{Request: req("initialize"), Arguments: dap.InitializeRequestArguments{
-		ClientID: "goide", ClientName: "goide", AdapterID: "go", Locale: "pt-BR", PathFormat: "path",
+		ClientID: "prumo", ClientName: "prumo", AdapterID: "go", Locale: "pt-BR", PathFormat: "path",
 		LinesStartAt1: true, ColumnsStartAt1: true, SupportsVariableType: true, SupportsRunInTerminalRequest: false,
 	}}); err != nil {
 		fail(err.Error())
@@ -278,7 +278,7 @@ func (m *Manager) run(s *session, connect func() (net.Conn, error), start dap.Re
 		return
 	}
 	if s.attach {
-		// Anexar para o processo (ou o headless começa parado): segue rodando até um breakpoint, como no GoLand.
+		// Anexar para o processo (ou o headless começa parado): segue rodando até um breakpoint.
 		_, _ = c.do(ctx, &dap.ContinueRequest{Request: req("continue"), Arguments: dap.ContinueArguments{ThreadId: 1}})
 	}
 	s.mu.Lock()

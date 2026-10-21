@@ -16,8 +16,8 @@ import (
 	"testing"
 	"time"
 
-	"goide/internal/store"
-	"goide/internal/tools"
+	"prumo/internal/store"
+	"prumo/internal/tools"
 )
 
 func tgz(t *testing.T, files map[string]string) []byte {

@@ -4,7 +4,7 @@ import { test, expect, openProject, openFile, a11y } from './helpers'
 test('S18-H1 rodar com cobertura: % no painel, faixas verde/vermelha no editor, esconder', async ({ page, fx }) => {
   await openProject(page, fx.seed())
   await openFile(page, 'internal/cart/cart_test.go')
-  await page.locator('.goide-run-glyph').first().click({ button: 'right' })
+  await page.locator('.prumo-run-glyph').first().click({ button: 'right' })
   await page.getByRole('menu', { name: 'Rodar ou depurar' }).getByRole('menuitem', { name: 'Rodar os testes do pacote com cobertura' }).click()
 
   const panel = page.getByRole('region', { name: 'Cobertura' })
@@ -22,13 +22,13 @@ test('S18-H1 rodar com cobertura: % no painel, faixas verde/vermelha no editor, 
   // No editor: verde onde rodou, vermelho no ramo do erro.
   await file.dblclick()
   await expect(page.getByRole('tab', { name: 'cart.go', exact: true })).toHaveAttribute('aria-selected', 'true')
-  await expect(page.locator('.monaco-editor .goide-cov-full').first()).toBeVisible()
-  await expect(page.locator('.monaco-editor .goide-cov-none').first()).toBeVisible()
+  await expect(page.locator('.monaco-editor .prumo-cov-full').first()).toBeVisible()
+  await expect(page.locator('.monaco-editor .prumo-cov-none').first()).toBeVisible()
 
   await panel.getByRole('button', { name: 'Esconder do editor' }).click()
-  await expect(page.locator('.monaco-editor .goide-cov')).toHaveCount(0)
+  await expect(page.locator('.monaco-editor .prumo-cov')).toHaveCount(0)
   await panel.getByRole('button', { name: 'Mostrar no editor' }).click()
-  await expect(page.locator('.monaco-editor .goide-cov').first()).toBeVisible()
+  await expect(page.locator('.monaco-editor .prumo-cov').first()).toBeVisible()
 })
 
 test('S18-H2 somar coberturas de duas execuções', async ({ page, fx }) => {
@@ -40,7 +40,7 @@ test('S18-H2 somar coberturas de duas execuções', async ({ page, fx }) => {
   const pctOf = async () => Number((await file.getAttribute('aria-label'))!.match(/, ([\d,]+)%/)![1].replace(',', '.'))
   const runWithCoverage = async (path: string, test: string) => {
     await openFile(page, path)
-    await page.locator('.goide-run-glyph').nth(1).click({ button: 'right' })
+    await page.locator('.prumo-run-glyph').nth(1).click({ button: 'right' })
     await page.getByRole('menu', { name: 'Rodar ou depurar' }).getByRole('menuitem', { name: `Rodar ${test} com cobertura` }).click()
   }
 
