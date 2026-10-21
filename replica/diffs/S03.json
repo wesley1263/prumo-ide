@@ -1,0 +1,40 @@
+{
+  "mode": "layout",
+  "original": {
+    "width": 2084,
+    "height": 1350
+  },
+  "clone": {
+    "width": 2000,
+    "height": 1296
+  },
+  "compared_at": {
+    "width": 480,
+    "height": 311
+  },
+  "height_delta_pct": 0.0,
+  "score": 17.0,
+  "verdict": "different",
+  "regions": [
+    {
+      "x": 0,
+      "y": 0,
+      "w": 2084,
+      "h": 1350,
+      "cells": 73,
+      "where": "middle centre"
+    },
+    {
+      "x": 0,
+      "y": 868,
+      "w": 173,
+      "h": 173,
+      "cells": 1,
+      "where": "bottom left"
+    }
+  ],
+  "files": {
+    "original": "replica/screens/S03.png",
+    "clone": "replica/clone-screens/S03-estado-referencia.png"
+  }
+}

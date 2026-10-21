@@ -1,0 +1,9 @@
+.fixtures/
+frontend/.dev-token
+frontend/node_modules/
+frontend/dist/*
+!frontend/dist/.keep
+build/bin/
+/devserver
+frontend/e2e/.run/
+.claude/

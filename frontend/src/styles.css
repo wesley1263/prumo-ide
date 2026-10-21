@@ -1,0 +1,204 @@
+@import '../../replica/design/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+  body {
+    -webkit-font-smoothing: antialiased;
+    user-select: none; /* IDE: texto da interface não é selecionável; editor e campos são */
+  }
+  input,
+  textarea,
+  .monaco-editor,
+  .selectable {
+    user-select: text;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-strong);
+    border-radius: var(--radius-pill);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@keyframes indeterminate {
+  0% {
+    left: -33%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Ícone ▶ no gutter do func main: triângulo desenhado com bordas, cor dos tokens. */
+.goide-run-glyph {
+  cursor: pointer;
+}
+.goide-run-glyph::after {
+  content: '';
+  display: block;
+  margin: calc((var(--leading-code) - var(--size-icon-sm)) / 2) auto 0;
+  width: 0;
+  height: 0;
+  border-top: calc(var(--size-icon-sm) / 2) solid transparent;
+  border-bottom: calc(var(--size-icon-sm) / 2) solid transparent;
+  border-left: calc(var(--size-icon-sm) * 0.8) solid var(--color-success);
+}
+.goide-run-glyph:hover::after {
+  filter: brightness(1.2);
+}
+
+/* Breakpoint: um círculo no lugar do número da linha (o número some, como nas IDEs desktop). */
+.monaco-editor .line-numbers.goide-bp {
+  color: transparent !important;
+  position: relative;
+}
+.monaco-editor .line-numbers.goide-bp::after {
+  content: '';
+  position: absolute;
+  right: calc(var(--space-6));
+  top: 50%;
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
+  margin-top: calc(var(--size-icon-sm) / -2);
+  border-radius: var(--radius-pill);
+  background: var(--color-breakpoint);
+}
+.monaco-editor .line-numbers.goide-bp-off::after {
+  background: transparent;
+  border: 2px solid var(--color-breakpoint);
+}
+.monaco-editor .line-numbers.goide-bp-cond::after {
+  box-shadow: inset 0 0 0 3px var(--color-breakpoint), inset 0 0 0 6px var(--color-bg);
+}
+.monaco-editor .line-numbers {
+  cursor: pointer;
+}
+/* Linha onde o programa está parado. */
+.monaco-editor .goide-exec-line {
+  background: var(--color-execution-line-bg);
+}
+.monaco-editor .goide-exec-arrow {
+  border-left: 3px solid var(--color-accent-text);
+}
+
+/* Marcadores de mudança em relação ao último commit (entre os números e o código). */
+.monaco-editor .goide-vcs {
+  cursor: pointer;
+  margin-left: var(--space-2);
+  width: var(--space-4) !important;
+}
+.monaco-editor .goide-vcs-added {
+  background: var(--color-vcs-added);
+}
+.monaco-editor .goide-vcs-modified {
+  background: var(--color-vcs-modified);
+}
+.monaco-editor .goide-vcs-deleted {
+  background: transparent;
+  height: 0 !important;
+  border-left: var(--space-4) solid var(--color-vcs-deleted);
+  border-top: var(--space-4) solid transparent;
+  border-bottom: var(--space-4) solid transparent;
+  margin-top: calc(var(--space-4) * -1);
+}
+
+/* Ocorrência na pré-visualização do Buscar nos arquivos. */
+.monaco-editor .goide-find-match {
+  background: var(--color-search-match-bg);
+  border-radius: var(--radius-xs);
+}
+
+/* Anotação do git blame (S27): coluna à esquerda do código, mais apagada quanto mais velho o commit. */
+.monaco-editor .goide-blame {
+  background: var(--color-chrome);
+  cursor: pointer;
+  font-style: normal;
+}
+.monaco-editor .goide-blame-age-0 { color: var(--color-accent-text); }
+.monaco-editor .goide-blame-age-1 { color: var(--color-text); }
+.monaco-editor .goide-blame-age-2 { color: var(--color-text-muted); }
+.monaco-editor .goide-blame-age-3,
+.monaco-editor .goide-blame-age-4 { color: var(--color-text-subtle); }
+.monaco-editor .goide-blame-age-pending { color: var(--color-warning); font-style: italic; }
+
+/* Merge em 3 painéis (S26). */
+.monaco-editor .goide-merge-conflict { background: var(--color-danger-bg); }
+.monaco-editor .goide-merge-resolved { background: var(--color-success-bg); }
+.monaco-editor .goide-merge-changed { background: var(--color-diff-modified-bg); }
+
+/* Cobertura (S18): faixa fina na borda esquerda dos números (os marcadores do git ficam à direita dela). */
+.monaco-editor .goide-cov {
+  width: 3px !important;
+  margin-left: 0;
+}
+.monaco-editor .goide-cov-full { background: var(--color-coverage-full); }
+.monaco-editor .goide-cov-none { background: var(--color-coverage-none); }
+.monaco-editor .goide-cov-partial { background: var(--color-coverage-partial); }
+
+/* Valores das variáveis durante a depuração (no fim da linha). */
+.monaco-editor .goide-inline-value {
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* Bookmark: marca na margem de glifos; com mnemônico, o caractere aparece nela. */
+.goide-bookmark::before {
+  content: '';
+  position: absolute;
+  inset: 15% 20%;
+  border-radius: 2px;
+  background: var(--color-accent);
+}
+.goide-bookmark-m::after {
+  position: absolute;
+  inset: 15% 20%;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.7;
+  text-align: center;
+  color: var(--color-on-accent);
+}
+
+/* Chamada recursiva: ↻ na margem de glifos. */
+.goide-recursion::before {
+  content: '↻';
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent-text);
+}
+
+/* Menu do botão direito no editor: o Monaco o desenha num shadow DOM preso ao body, fora do .monaco-editor onde
+   ele põe as variáveis do tema; sem estas, o menu ficava transparente e com o texto escuro sobre o código. */
+:root {
+  --vscode-menu-background: var(--color-surface-raised);
+  --vscode-menu-foreground: var(--color-text);
+  --vscode-menu-border: var(--color-border);
+  --vscode-menu-separatorBackground: var(--color-border);
+  --vscode-menu-selectionBorder: transparent;
+  --vscode-list-hoverBackground: var(--color-selection);
+  --vscode-list-hoverForeground: var(--color-text);
+  --vscode-widget-shadow: rgb(0 0 0 / 0.4);
+  --vscode-scrollbarSlider-background: var(--color-border-strong);
+  --vscode-scrollbarSlider-hoverBackground: var(--color-text-subtle);
+  --vscode-scrollbarSlider-activeBackground: var(--color-text-subtle);
+}
