@@ -159,7 +159,7 @@ English in `frontend/src/i18n/en/`.
 
 ## License
 
-No license has been chosen yet. Until one is added, the default copyright rules apply.
+[MIT](LICENSE) © 2026 Weslei Souza.
 
 ## Acknowledgements
 
