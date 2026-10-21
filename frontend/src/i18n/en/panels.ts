@@ -283,7 +283,7 @@ export const panels: Record<string, string> = {
 
   // panels/StubPanel.tsx
   '{name} ainda não foi construída': '{name} has not been built yet',
-  'Esta janela ({screen}) entra num próximo marco. Veja replica/build-log.md.': 'This window ({screen}) comes in a later milestone. See replica/build-log.md.',
+  'Esta janela ({screen}) ainda não foi construída.': 'This window ({screen}) has not been built yet.',
 
   // panels/TerminalPanel.tsx
   'Não foi possível abrir o terminal': 'Could not open the terminal',

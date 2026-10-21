@@ -1,6 +1,6 @@
 // Gerado por build_tokens.py a partir de tokens.json. Não edite.
-// Tailwind v3: presets: [require('./replica/design/tailwind.preset.js')]
-// Tailwind v4: @config "./replica/design/tailwind.preset.js";
+// Tailwind v3: presets: [require('./design/tailwind.preset.js')]
+// Tailwind v4: @config "./design/tailwind.preset.js";
 // Paleta fechada: só as cores dos tokens existem (bg-surface, text-muted...), sem hex solto.
 module.exports = {
   "darkMode": [

@@ -9,7 +9,6 @@
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "preview": "vite preview",
-    "shots": "node scripts/screenshots.mjs",
     "e2e": "playwright test",
     "test:unit": "node --test src/**/*.test.ts"
   },

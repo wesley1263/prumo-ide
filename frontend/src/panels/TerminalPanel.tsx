@@ -17,7 +17,7 @@ import { useApp } from '../state/app'
 import { useDocs } from '../editor/docs'
 import { keyLabel } from '../lib/keymap'
 import { usePrefs } from '../state/settings'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 import { t } from '../i18n'
 
 // A aba escolhida sobrevive a esconder/mostrar a janela.

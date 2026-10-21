@@ -10,7 +10,7 @@ import { usePrefs, codeLineHeight } from '../state/settings'
 import { IconButton } from '../design/controls'
 import { cn } from '../design/cn'
 import { setFocusedEditor } from './EditorArea'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 import { t } from '../i18n'
 
 interface Split {

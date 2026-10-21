@@ -15,7 +15,7 @@ import { Dialog, Spinner, toast } from '../design/feedback'
 import { cn } from '../design/cn'
 import { keyLabel } from '../lib/keymap'
 import { useSearchUi } from './state'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 import { lang, t, tn } from '../i18n'
 
 const ROW = 24 // h-row

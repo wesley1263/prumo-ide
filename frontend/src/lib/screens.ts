@@ -1,4 +1,4 @@
-// Inventário de telas do recon (replica/recon.md). IDs estáveis: o resto do projeto se refere a eles.
+// Inventário de telas da IDE. IDs estáveis: o resto do projeto se refere a eles.
 // status: built = construída nesta fase; partial = existe com parte dos estados; stub = só o lugar reservado.
 
 export type ScreenKind = 'view' | 'toolwindow' | 'dialog' | 'popup'
