@@ -1,7 +1,7 @@
 // Monaco configurado para a IDE: worker do editor, temas a partir dos tokens e atalhos.
 import * as monaco from './monaco-core'
 import EditorWorker from 'monaco-editor/editor/editor.worker.js?worker'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 
 declare global {
   interface Window {

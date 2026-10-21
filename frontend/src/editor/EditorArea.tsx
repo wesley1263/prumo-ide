@@ -18,7 +18,7 @@ import { blameHashAt, toggleBlame } from './blame'
 import { showCommit, showFileHistory } from '../panels/GitLogPanel'
 import { splitRight } from './SplitEditor'
 import { DiffView } from './DiffView'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 import { t, tn } from '../i18n'
 
 /** Posição do cursor, para a status bar. */

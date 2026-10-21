@@ -10,7 +10,7 @@ export function StubPanel({ side, screen }: { side: Side; screen: string }) {
   return (
     <ToolWindowFrame side={side}>
       <EmptyState title={t('{name} ainda não foi construída', { name: s?.name ?? screen })}>
-        {t('Esta janela ({screen}) entra num próximo marco. Veja replica/build-log.md.', { screen })}
+        {t('Esta janela ({screen}) ainda não foi construída.', { screen })}
       </EmptyState>
     </ToolWindowFrame>
   )

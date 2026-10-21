@@ -1,4 +1,4 @@
--- 0001_init: schema inicial do estado local. Espelho de replica/schema.sql (o documento de arquitetura).
+-- 0001_init: schema inicial do estado local.
 -- Fonte da verdade do VCS é o git; diagnósticos/símbolos vêm do gopls; nada disso é persistido aqui.
 --
 -- Convenções (adaptadas do template web para SQLite local):

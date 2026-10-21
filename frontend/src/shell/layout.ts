@@ -16,7 +16,7 @@ import {
   SquareTerminal,
   type LucideIcon,
 } from 'lucide-react'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 import { t } from '../i18n'
 
 export type Side = 'left' | 'bottom' | 'right'

@@ -2,7 +2,7 @@
 import { create } from 'zustand'
 import { api } from '../lib/api'
 import { setKeyOverrides } from '../lib/keymap'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 
 export interface Prefs {
   'editor.fontSize': number

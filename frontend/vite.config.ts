@@ -23,7 +23,6 @@ export default defineConfig({
   server: {
     port: Number(process.env.PRUMO_VITE_PORT ?? 5173),
     strictPort: true,
-    fs: { allow: ['..'] }, // tokens em ../replica/design
     proxy: {
       '/bridge': {
         target: devserver,

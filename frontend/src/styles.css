@@ -1,4 +1,4 @@
-@import '../../replica/design/tokens.css';
+@import '../design/tokens.css';
 
 @tailwind base;
 @tailwind components;

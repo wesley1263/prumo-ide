@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { FileCode2, Folder, Play, RefreshCw, Settings } from 'lucide-react'
 import { Badge, Button, Checkbox, IconButton, Kbd, Menu, TextArea, TextField, Tooltip } from './controls'
 import { Banner, Dialog, EmptyState, ProgressBar, Spinner, Splitter, TreeView, toast, type TreeNode } from './feedback'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

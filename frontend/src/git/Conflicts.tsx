@@ -13,7 +13,7 @@ import { usePrefs, codeLineHeight } from '../state/settings'
 import { Button, IconButton } from '../design/controls'
 import { Dialog, EmptyState, Spinner, toast } from '../design/feedback'
 import { cn } from '../design/cn'
-import tokens from '../../../replica/design/tokens.json'
+import tokens from '../../design/tokens.json'
 import { t } from '../i18n'
 
 const opLabel: Record<string, string> = { merge: 'merge', rebase: 'rebase', 'cherry-pick': 'cherry-pick', revert: 'revert' }

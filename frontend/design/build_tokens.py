@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Gera tokens.css e tailwind.preset.js a partir de tokens.json. Só stdlib.
 
-    python3 -I replica/design/build_tokens.py
+    python3 -I frontend/design/build_tokens.py
 
 tokens.json é a fonte da verdade. Os dois arquivos gerados não são editados à mão.
 Tema: <html data-theme="dark|light">. Sem o atributo, segue o sistema (padrão escuro).
@@ -102,8 +102,8 @@ def build_preset(t):
     }
     body = json.dumps(preset, indent=2, ensure_ascii=False)
     return ("// Gerado por build_tokens.py a partir de tokens.json. Não edite.\n"
-            "// Tailwind v3: presets: [require('./replica/design/tailwind.preset.js')]\n"
-            "// Tailwind v4: @config \"./replica/design/tailwind.preset.js\";\n"
+            "// Tailwind v3: presets: [require('./design/tailwind.preset.js')]\n"
+            "// Tailwind v4: @config \"./design/tailwind.preset.js\";\n"
             "// Paleta fechada: só as cores dos tokens existem (bg-surface, text-muted...), sem hex solto.\n"
             "module.exports = %s;\n" % body)
 

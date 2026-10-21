@@ -7,3 +7,6 @@ build/bin/
 /devserver
 frontend/e2e/.run/
 .claude/
+
+# Planejamento local (pipeline Replica): fica só na máquina, fora do repositório.
+replica/
