@@ -1,7 +1,7 @@
 // Área central: abas, editor Monaco (um só, troca de modelo por aba), diff e estados vazios.
 import { useEffect, useRef, useState } from 'react'
 import { create } from 'zustand'
-import { Bug, FileCode2, FileDiff, Play, Undo2, X, Columns2, ShieldCheck } from 'lucide-react'
+import { Bug, Eye, FileCode2, FileDiff, Play, Undo2, X, Columns2, ShieldCheck } from 'lucide-react'
 import { hunkAt, revertHunk, type Hunk } from './vcsGutter'
 import { ContextMenu } from '../design/ContextMenu'
 import { useDebug } from '../state/debug'
@@ -18,6 +18,7 @@ import { blameHashAt, toggleBlame } from './blame'
 import { showCommit, showFileHistory } from '../panels/GitLogPanel'
 import { splitRight } from './SplitEditor'
 import { DiffView } from './DiffView'
+import { MarkdownPreview, isMarkdown, useMarkdownView } from './MarkdownPreview'
 import tokens from '../../design/tokens.json'
 import { t, tn } from '../i18n'
 
@@ -50,6 +51,8 @@ const viewStates = new Map<string, monaco.editor.ICodeEditorViewState | null>()
 function Tabs() {
   const { tabs, active, docs, activate, close } = useDocs()
   const activeIsFile = !!active && !active.startsWith('diff:')
+  const mdSource = useMarkdownView((s) => s.source)
+  const toggleMd = useMarkdownView((s) => s.toggle)
   return (
     <div className="flex h-editor-tab shrink-0 items-stretch border-b border-border bg-bg">
     <div role="tablist" aria-label={t('Arquivos abertos')} className="flex min-w-0 flex-1 items-stretch overflow-x-auto">
@@ -102,6 +105,15 @@ function Tabs() {
         )
       })}
     </div>
+    {activeIsFile && isMarkdown(active) && (
+      <IconButton
+        label={mdSource.has(active) ? t('Visualizar markdown') : t('Editar markdown')}
+        size="sm"
+        className="mx-1 self-center"
+        icon={mdSource.has(active) ? <Eye className="size-icon-sm" /> : <FileCode2 className="size-icon-sm" />}
+        onPress={() => toggleMd(active)}
+      />
+    )}
     <IconButton label={t('Dividir à direita')} size="sm" className="mx-1 self-center" icon={<Columns2 className="size-icon-sm" />} isDisabled={!activeIsFile} onPress={() => splitRight()} />
     </div>
   )
@@ -166,6 +178,7 @@ function runTarget(key: string, t: RunTarget, mode: 'run' | 'debug' | 'coverage'
 export function EditorArea() {
   const host = useRef<HTMLDivElement>(null)
   const { tabs, active, docs, reveal } = useDocs()
+  const mdSource = useMarkdownView((s) => s.source)
   const theme = useApp((s) => s.theme)
   const project = useApp((s) => s.project)
   const answerTrust = useApp((s) => s.answerTrust)
@@ -345,6 +358,8 @@ export function EditorArea() {
   }, [reveal, activeDoc?.key])
 
 
+  const showMdPreview = activeDoc?.status === 'ok' && isMarkdown(activeDoc.key) && !mdSource.has(activeDoc.key)
+
   const restricted = project && !project.trusted
   const lspProblem = !restricted && (lsp.state === 'error' ? lsp.message || t('O gopls não respondeu.') : null)
 
@@ -362,7 +377,12 @@ export function EditorArea() {
       {activeDoc?.key.startsWith('ext:') && <Banner level="info">{t('Arquivo de fora do projeto, aberto só para leitura.')}</Banner>}
       <div className="relative min-h-0 flex-1">
         {/* display:none, não visibility: o Monaco força visibility:visible em elementos internos. */}
-        <div ref={host} className={cn('absolute inset-0', (!activeDoc || activeTab?.kind !== 'file') && 'hidden')} />
+        <div ref={host} className={cn('absolute inset-0', (!activeDoc || activeTab?.kind !== 'file' || showMdPreview) && 'hidden')} />
+        {showMdPreview && (
+          <div className="absolute inset-0">
+            <MarkdownPreview key={activeDoc.key} uri={activeDoc.uri} />
+          </div>
+        )}
         {activeTab?.kind === 'diff' && project && (
           <div className="absolute inset-0">
             <DiffView key={tabKeyOf(activeTab)} projectId={project.id} path={activeTab.path} rev={activeTab.rev} oldPath={activeTab.oldPath} />

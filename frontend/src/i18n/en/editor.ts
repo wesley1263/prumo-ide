@@ -41,6 +41,8 @@ export const editor: Record<string, string> = {
   'Reverter este trecho': 'Revert this hunk',
   'Ver o diff do arquivo': 'Show file diff',
   'Carregando…': 'Loading…',
+  'Visualizar markdown': 'Preview markdown',
+  'Editar markdown': 'Edit markdown',
 
   // DiffView
   adicionado: 'added',
