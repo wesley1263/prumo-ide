@@ -131,6 +131,21 @@ monaco.editor.addKeybindingRules([
   { keybinding: M.CtrlCmd | K.KeyD, command: 'editor.action.copyLinesDownAction', when: 'editorTextFocus' },
   { keybinding: M.CtrlCmd | K.KeyY, command: 'editor.action.deleteLines', when: 'editorTextFocus' },
   { keybinding: M.CtrlCmd | K.Slash, command: 'editor.action.commentLine', when: 'editorTextFocus' },
+  // Mover a linha (ou as linhas selecionadas): Shift+Alt+↑/↓ e Ctrl+Shift+↑/↓. Alt+↑/↓ do Monaco continua.
+  // No Linux o Monaco usa Shift+Alt+↑/↓ para cursor extra; aqui isso fica com Ctrl+Alt+↑/↓.
+  { keybinding: M.Shift | M.Alt | K.UpArrow, command: '-editor.action.insertCursorAbove' },
+  { keybinding: M.Shift | M.Alt | K.DownArrow, command: '-editor.action.insertCursorBelow' },
+  { keybinding: M.Shift | M.Alt | K.UpArrow, command: 'editor.action.moveLinesUpAction', when: 'editorTextFocus && !editorReadonly' },
+  { keybinding: M.Shift | M.Alt | K.DownArrow, command: 'editor.action.moveLinesDownAction', when: 'editorTextFocus && !editorReadonly' },
+  { keybinding: M.CtrlCmd | M.Shift | K.UpArrow, command: 'editor.action.moveLinesUpAction', when: 'editorTextFocus && !editorReadonly' },
+  { keybinding: M.CtrlCmd | M.Shift | K.DownArrow, command: 'editor.action.moveLinesDownAction', when: 'editorTextFocus && !editorReadonly' },
+  // Vários cursores: Alt+J marca a próxima ocorrência (Ctrl+D é duplicar), Shift+Alt+J desfaz a última,
+  // Ctrl+Alt+Shift+J marca todas; Ctrl+Alt+↑/↓ põe um cursor na linha de cima/baixo (Alt+clique também).
+  { keybinding: M.Alt | K.KeyJ, command: 'editor.action.addSelectionToNextFindMatch', when: 'editorFocus' },
+  { keybinding: M.Shift | M.Alt | K.KeyJ, command: 'cursorUndo', when: 'editorTextFocus' },
+  { keybinding: M.CtrlCmd | M.Alt | M.Shift | K.KeyJ, command: 'editor.action.selectHighlights', when: 'editorFocus' },
+  { keybinding: M.CtrlCmd | M.Alt | K.UpArrow, command: 'editor.action.insertCursorAbove', when: 'editorTextFocus' },
+  { keybinding: M.CtrlCmd | M.Alt | K.DownArrow, command: 'editor.action.insertCursorBelow', when: 'editorTextFocus' },
 ])
 
 export { monaco }

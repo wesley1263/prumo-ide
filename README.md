@@ -34,6 +34,9 @@ releases yet: [the installer](#install) builds it from source in one step.
 - Search Everywhere (files, symbols, actions), Find and Replace in Files with regex and scope
 - Structure view, breadcrumbs, bookmarks with mnemonics, live templates, exit point highlighting,
   recursive call markers, split editor, and a diff viewer with side-by-side and unified modes
+- Desktop IDE line editing: duplicate (Ctrl+D), delete (Ctrl+Y) and move lines (Ctrl+Shift+↑/↓ or
+  Shift+Alt+↑/↓), and multiple carets (Alt+J next occurrence, Ctrl+Alt+Shift+J all occurrences,
+  Ctrl+Alt+↑/↓ or Alt+click to add a caret)
 
 **Run, test, debug**
 - Run configurations (Go Build and Go Test) with arguments, environment, working directory, build tags,
