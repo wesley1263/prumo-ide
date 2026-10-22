@@ -202,3 +202,26 @@
   --vscode-scrollbarSlider-hoverBackground: var(--color-text-subtle);
   --vscode-scrollbarSlider-activeBackground: var(--color-text-subtle);
 }
+
+/* Visualização de markdown (.md): tipografia sobre os tokens. */
+.prumo-md { font-size: var(--text-md, 14px); line-height: 1.6; }
+.prumo-md :is(h1, h2, h3, h4, h5, h6) { margin: 1.4em 0 0.5em; font-weight: 600; line-height: 1.25; }
+.prumo-md h1 { font-size: 1.8em; padding-bottom: 0.3em; border-bottom: 1px solid var(--color-border); }
+.prumo-md h2 { font-size: 1.4em; padding-bottom: 0.3em; border-bottom: 1px solid var(--color-border); }
+.prumo-md h3 { font-size: 1.15em; }
+.prumo-md > article > :first-child { margin-top: 0; }
+.prumo-md :is(p, ul, ol, pre, blockquote, table) { margin: 0 0 1em; }
+.prumo-md :is(ul, ol) { padding-left: 1.6em; }
+.prumo-md ul { list-style: disc; }
+.prumo-md ol { list-style: decimal; }
+.prumo-md a { color: var(--color-accent-text); text-decoration: underline; cursor: pointer; }
+.prumo-md code { font-family: var(--font-mono, monospace); font-size: 0.9em; background: var(--color-surface-raised); padding: 0.1em 0.35em; border-radius: 3px; }
+.prumo-md pre { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 6px; padding: 0.8em 1em; overflow: auto; }
+.prumo-md pre code { background: none; padding: 0; }
+.prumo-md blockquote { border-left: 3px solid var(--color-border-strong); padding-left: 1em; color: var(--color-text-muted); }
+.prumo-md table { border-collapse: collapse; display: block; overflow: auto; }
+.prumo-md :is(th, td) { border: 1px solid var(--color-border); padding: 0.35em 0.8em; }
+.prumo-md th { background: var(--color-surface); font-weight: 600; }
+.prumo-md hr { border: 0; border-top: 1px solid var(--color-border); margin: 1.5em 0; }
+.prumo-md img { max-width: 100%; }
+.prumo-md input[type='checkbox'] { margin-right: 0.4em; }

@@ -102,8 +102,8 @@ export async function openProject(page: Page, dir: string, opts: { trust?: boole
   if (trust) await expect(page.getByText('gopls pronto')).toBeVisible({ timeout: 60_000 })
 }
 
-/** Abre um arquivo pela árvore, expandindo as pastas do caminho. */
-export async function openFile(page: Page, rel: string) {
+/** Abre um arquivo pela árvore, expandindo as pastas do caminho. Um .md abre no texto, salvo com `preview: true`. */
+export async function openFile(page: Page, rel: string, opts: { preview?: boolean } = {}) {
   const tree = page.getByRole('tree', { name: 'Arquivos do projeto' })
   const parts = rel.split('/')
   for (const dir of parts.slice(0, -1)) {
@@ -112,6 +112,7 @@ export async function openFile(page: Page, rel: string) {
   }
   await tree.getByRole('treeitem', { name: parts.at(-1)!, exact: true }).dblclick()
   await expect(page.getByRole('tab', { name: new RegExp(`^${escape(parts.at(-1)!)}(, não salvo)?$`) })).toHaveAttribute('aria-selected', 'true')
+  if (/\.md$/i.test(rel) && !opts.preview) await page.getByRole('button', { name: 'Editar markdown' }).click()
 }
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
