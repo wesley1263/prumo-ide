@@ -370,6 +370,7 @@ var settingRules = map[string]func(raw json.RawMessage) error{
 		return nil
 	},
 	"commit.agentConsent": isBool,
+	"agent.editConsent":   isBool,
 	"terminal.shell": func(raw json.RawMessage) error {
 		var v string
 		if json.Unmarshal(raw, &v) != nil {
@@ -1034,6 +1035,54 @@ func (g *Git) SuggestCommitMessage(projectID string, req SuggestRequest) (Sugges
 	}
 	return SuggestResult{Message: msg, Agent: cmd.Name}, nil
 }
+
+// AgentEditRequest é o pedido de gerar ou alterar código no editor: o texto do arquivo em volta do trecho alvo.
+type AgentEditRequest struct {
+	Path        string `json:"path"`
+	Language    string `json:"language"`
+	Before      string `json:"before"`
+	Target      string `json:"target"`
+	After       string `json:"after"`
+	Instruction string `json:"instruction"`
+}
+
+// AgentEditResult é o código novo do trecho e quem o escreveu.
+type AgentEditResult struct {
+	Code  string `json:"code"`
+	Agent string `json:"agent"`
+}
+
+// AgentEdit pede ao agente configurado (o mesmo da mensagem de commit) para gerar ou alterar um trecho de código.
+// Só roda quando o usuário pede; o arquivo aberto vai para o provedor do agente.
+func (t *Tools) AgentEdit(projectID string, req AgentEditRequest) (AgentEditResult, error) {
+	if _, err := t.c.Reg.RequireTrusted(projectID); err != nil {
+		return AgentEditResult{}, err
+	}
+	if strings.TrimSpace(req.Instruction) == "" {
+		return AgentEditResult{}, errors.New("escreva o que a IA deve fazer")
+	}
+	vals, _ := t.c.DB.GetSettings(context.Background(), []string{"commit.agent", "commit.agentCommand"})
+	str := func(k, def string) string {
+		var v string
+		if raw, ok := vals[k]; ok && json.Unmarshal(raw, &v) == nil && v != "" {
+			return v
+		}
+		return def
+	}
+	cmd, err := agent.Resolve(str("commit.agent", "auto"), str("commit.agentCommand", ""), run.SplitArgs)
+	if err != nil {
+		return AgentEditResult{}, err
+	}
+	prompt := agent.BuildEditPrompt(agent.EditContext{Path: req.Path, Language: req.Language, Before: req.Before, Target: req.Target, After: req.After, Instruction: req.Instruction})
+	code, err := t.c.Agent.RunWith(projectID+":edit", cmd, prompt, agent.CleanCode)
+	if err != nil {
+		return AgentEditResult{}, err
+	}
+	return AgentEditResult{Code: code, Agent: cmd.Name}, nil
+}
+
+// CancelAgentEdit interrompe o pedido de edição em andamento do projeto.
+func (t *Tools) CancelAgentEdit(projectID string) { t.c.Agent.Cancel(projectID + ":edit") }
 
 // CancelSuggest interrompe a geração em andamento do projeto.
 func (g *Git) CancelSuggest(projectID string) { g.c.Agent.Cancel(projectID) }

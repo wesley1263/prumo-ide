@@ -58,6 +58,7 @@ import { RunConfigDialog, openRunConfigs } from '../run/RunConfigDialog'
 import { useApp, windowForConfig } from '../state/app'
 import { api } from '../lib/api'
 import { installKeymap, registerActions } from '../lib/keymap'
+import { openAiEdit } from '../editor/aiEdit'
 import { SearchEverywhere } from '../search/SearchEverywhere'
 import { FindInFiles } from '../search/FindInFiles'
 import { trackRecentFiles, useSearchUi } from '../search/state'
@@ -290,6 +291,16 @@ export function AppShell() {
       { id: 'bookmark.mnemonic', title: t('Bookmark com mnemônico'), keys: 'Mod+F11', run: askMnemonic },
       { id: 'bookmark.list', title: t('Mostrar bookmarks'), keys: 'Shift+F11', run: () => useBookmarks.setState({ dialog: true }) },
       ...[...'1234567890'].map((d) => ({ id: `bookmark.goto.${d}`, title: t('Ir ao bookmark {d}', { d }), keys: `Mod+${d}`, run: () => jumpToMnemonic(d) })),
+      {
+        id: 'editor.aiEdit',
+        title: t('Pedir código à IA'),
+        keys: 'Mod+\\',
+        when: inEditor,
+        run: () => {
+          const ed = currentEditor()
+          if (ed) openAiEdit(ed)
+        },
+      },
       {
         id: 'code.generate',
         title: t('Gerar código (construtor, teste)'),

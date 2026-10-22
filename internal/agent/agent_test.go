@@ -125,3 +125,33 @@ func TestResolve(t *testing.T) {
 		t.Fatal("Detect deveria listar todos os conhecidos")
 	}
 }
+
+func TestBuildEditPrompt(t *testing.T) {
+	p := BuildEditPrompt(EditContext{Path: "a.go", Language: "go", Before: "package a\n\n", Target: "func f() {}", After: "\n", Instruction: " add a log "})
+	for _, want := range []string{"File: a.go", "package a\n\n<TARGET>func f() {}</TARGET>\n", "replaces the text between", "Instruction from the user:\nadd a log\n"} {
+		if !strings.Contains(p, want) {
+			t.Errorf("prompt sem %q:\n%s", want, p)
+		}
+	}
+	ins := BuildEditPrompt(EditContext{Path: "a.go", Before: "x\n", After: "y\n", Instruction: "z"})
+	if !strings.Contains(ins, "x\n<TARGET/>y\n") || !strings.Contains(ins, "inserted at") {
+		t.Errorf("inserção:\n%s", ins)
+	}
+	big := BuildEditPrompt(EditContext{Path: "a.go", Before: strings.Repeat("linha\n", 20000), After: strings.Repeat("linha\n", 20000), Instruction: "z"})
+	if len(big) > 3*contextBytes || !strings.Contains(big, "earlier lines omitted") || !strings.Contains(big, "later lines omitted") {
+		t.Errorf("contexto não foi cortado: %d bytes", len(big))
+	}
+}
+
+func TestCleanCode(t *testing.T) {
+	for in, want := range map[string]string{
+		"\treturn 1\n":                     "\treturn 1",
+		"```go\n\tx := 1\n\ty := 2\n```\n": "\tx := 1\n\ty := 2",
+		"\n\n  a\r\n  b\r\n":               "  a\n  b",
+		"message: not a label":             "message: not a label",
+	} {
+		if got := CleanCode(in); got != want {
+			t.Errorf("CleanCode(%q) = %q, quero %q", in, got, want)
+		}
+	}
+}

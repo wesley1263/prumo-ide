@@ -38,7 +38,7 @@ var Known = []Spec{
 	{ID: "codex", Name: "Codex CLI", Vendor: "OpenAI", Exe: "codex",
 		Args: []string{"exec", "--skip-git-repo-check", "--sandbox", "read-only", "--color", "never", "-"}},
 	{ID: "gemini", Name: "Gemini CLI", Vendor: "Google", Exe: "gemini",
-		Args: []string{"-p", "Follow the instructions above and reply with the commit message only."}},
+		Args: []string{"-p", "Follow the instructions above and reply with the requested output only."}},
 }
 
 // Info é um agente para a UI (Configurações): onde está, se foi achado.
@@ -160,8 +160,13 @@ func NewRunner() *Runner { return &Runner{running: map[string]context.CancelFunc
 // ErrCanceled: o usuário cancelou.
 var ErrCanceled = errors.New("geração cancelada")
 
-// Run manda o pedido para o agente e devolve a resposta já limpa.
+// Run manda o pedido para o agente e devolve a resposta já limpa (mensagem de commit).
 func (r *Runner) Run(key string, cmd Command, prompt string) (string, error) {
+	return r.RunWith(key, cmd, prompt, Clean)
+}
+
+// RunWith é o Run com outra limpeza da resposta (por exemplo CleanCode, que preserva a indentação).
+func (r *Runner) RunWith(key string, cmd Command, prompt string, clean func(string) string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), Timeout)
 	r.mu.Lock()
 	if prev, ok := r.running[key]; ok {
@@ -198,9 +203,9 @@ func (r *Runner) Run(key string, cmd Command, prompt string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("%s falhou: %s", cmd.Name, lastLines(stderr.String(), stdout.String()))
 	}
-	msg := Clean(stdout.String())
+	msg := clean(stdout.String())
 	if msg == "" {
-		return "", fmt.Errorf("%s não devolveu nenhuma mensagem", cmd.Name)
+		return "", fmt.Errorf("%s não devolveu nenhuma resposta", cmd.Name)
 	}
 	return msg, nil
 }

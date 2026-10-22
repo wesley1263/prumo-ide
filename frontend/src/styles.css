@@ -225,3 +225,8 @@
 .prumo-md hr { border: 0; border-top: 1px solid var(--color-border); margin: 1.5em 0; }
 .prumo-md img { max-width: 100%; }
 .prumo-md input[type='checkbox'] { margin-right: 0.4em; }
+
+/* Trecho que a IA acabou de escrever no editor (Ctrl+\\), até aceitar ou desfazer. */
+.monaco-editor .prumo-ai-added {
+  background: var(--color-diff-added-bg);
+}
