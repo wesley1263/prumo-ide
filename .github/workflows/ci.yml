@@ -126,8 +126,9 @@ jobs:
           git config --global init.defaultBranch main
       - run: npm ci
       # O Playwright usa o Google Chrome instalado (channel: 'chrome'), que já vem no runner.
+      # Uma nova tentativa por teste: o runner compartilhado é bem mais lento que uma máquina de desenvolvimento.
       - name: Playwright
-        run: npm run e2e
+        run: npm run e2e -- --retries=1
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

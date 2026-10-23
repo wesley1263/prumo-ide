@@ -135,6 +135,20 @@ function Box({ ed, model, docKey, target, close, setResult }: {
     }
   }
 
+  // Esc fecha (ou desfaz, na revisão) onde quer que esteja o foco: no editor, na caixa ou fora dela.
+  const onEsc = useRef<() => void>(() => {})
+  onEsc.current = () => (phase === 'review' ? undo() : cancel())
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return
+      e.preventDefault()
+      e.stopPropagation()
+      onEsc.current()
+    }
+    window.addEventListener('keydown', key, true)
+    return () => window.removeEventListener('keydown', key, true)
+  }, [])
+
   const where = target.text ? t('Alterar o trecho com {agent}', { agent: agent.name || t('a IA') }) : t('Gerar código aqui com {agent}', { agent: agent.name || t('a IA') })
   return (
     <div
@@ -146,10 +160,6 @@ function Box({ ed, model, docKey, target, close, setResult }: {
       className="flex w-[34rem] max-w-[80vw] flex-col outline-none gap-2 rounded-lg border border-border-strong bg-surface p-2 text-sm text-text shadow-dialog"
       onKeyDown={(e) => {
         e.stopPropagation()
-        if (e.key === 'Escape') {
-          e.preventDefault()
-          phase === 'review' ? undo() : cancel()
-        }
         if (phase === 'review' && e.key === 'Enter') {
           e.preventDefault()
           accept()
