@@ -678,6 +678,9 @@ function AgentSettings({ q }: { q: string }) {
       <Checkbox isSelected={!prefs['commit.agentConsent']} onChange={(v) => void save({ 'commit.agentConsent': !v })}>
         {t('Perguntar antes de enviar o diff ao agente')}
       </Checkbox>
+      <Checkbox isSelected={!prefs['agent.editConsent']} onChange={(v) => void save({ 'agent.editConsent': !v })}>
+        {t('Perguntar antes de enviar o código do arquivo ao agente (IA no editor)')}
+      </Checkbox>
     </section>
   )
 }

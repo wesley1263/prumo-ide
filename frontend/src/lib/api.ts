@@ -568,6 +568,9 @@ export const api = {
   Tools: {
     Status: () => call<ToolsStatus>('Tools.Status'),
     Agents: () => call<AgentInfo[]>('Tools.Agents'),
+    AgentEdit: (projectId: string, req: { path: string; language: string; before: string; target: string; after: string; instruction: string }) =>
+      call<{ code: string; agent: string }>('Tools.AgentEdit', projectId, req),
+    CancelAgentEdit: (projectId: string) => call<void>('Tools.CancelAgentEdit', projectId),
     Install: (name: 'gopls' | 'dlv') => call<string>('Tools.Install', name),
   },
   Files: {

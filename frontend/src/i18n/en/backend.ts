@@ -257,6 +257,8 @@ export const backend: Record<string, string> = {
   '{0} não respondeu em {1}': '{0} did not answer within {1}',
   '{0} falhou: {1}': '{0} failed: {1}',
   '{0} não devolveu nenhuma mensagem': '{0} returned no message',
+  '{0} não devolveu nenhuma resposta': '{0} returned no answer',
+  'escreva o que a IA deve fazer': 'write what the AI should do',
   'não há diferença para descrever nos arquivos marcados': 'there is no change to describe in the selected files',
   'nenhum arquivo selecionado': 'no file selected',
   'agente deve ser texto': 'agent must be text',
