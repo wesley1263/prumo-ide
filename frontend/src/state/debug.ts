@@ -67,7 +67,13 @@ export const useDebug = create<DebugStore>((set, get) => ({
     set({ breakpoints: await api.Breakpoints.List(projectId), muted: await api.Breakpoints.Muted(projectId), sessions: [], active: null, frame: null, dialog: null })
     offs = [
       on('debug:breakpoints', async (e) => {
-        if (e.projectId === projectId) set({ breakpoints: await api.Breakpoints.List(projectId), muted: await api.Breakpoints.Muted(projectId) })
+        if (e.projectId !== projectId) return
+        // O aviso pode chegar com o projeto já fechado: reler falha e não há mais o que mostrar.
+        try {
+          set({ breakpoints: await api.Breakpoints.List(projectId), muted: await api.Breakpoints.Muted(projectId) })
+        } catch {
+          /* projeto fechado */
+        }
       }),
       on('debug:state', (info) => {
         if (info.projectId !== projectId) return
