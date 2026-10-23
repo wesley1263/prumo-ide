@@ -134,7 +134,7 @@ export const useApp = create<AppState>((set, get) => ({
     const { project, needsTrust } = await api.Projects.Open(path)
     set({ project, trustAsked: needsTrust, git: null, runs: [], runConfigs: [], selectedConfig: null })
     get().refreshGit()
-    get().refreshRunConfigs()
+    get().refreshRunConfigs().catch(() => {}) // o projeto pode fechar antes da resposta
     get().refreshRecent().catch(() => {})
   },
 

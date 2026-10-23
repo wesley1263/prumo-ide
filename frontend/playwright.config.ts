@@ -11,7 +11,7 @@ const PATH = `${process.env.PATH}:${homedir()}/go/bin` // gopls instalado com go
 export default defineConfig({
   testDir: 'e2e',
   outputDir: `${RUN}/results`,
-  timeout: 90_000,
+  timeout: 240_000, // um teste que abre projeto espera o gopls; com dois workers na máquina isso estica
   expect: { timeout: 15_000 },
   workers: 2, // cada teste sobe um gopls próprio
   retries: 0,

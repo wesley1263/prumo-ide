@@ -218,7 +218,8 @@ export function AppShell() {
   useEffect(() => installAutoRerun(), [project.id])
   useEffect(() => installBranchContext(), [project.id])
   useEffect(() => {
-    void useDebug.getState().load(project.id)
+    // O projeto pode fechar antes da resposta: aí não há breakpoints para mostrar e o erro não interessa.
+    void useDebug.getState().load(project.id).catch(() => {})
     return installDebugDecorations()
   }, [project.id])
 
