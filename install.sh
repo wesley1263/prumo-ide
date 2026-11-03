@@ -95,6 +95,8 @@ if [[ "$OS" == "Linux" ]]; then
 elif [[ "$OS" == "Darwin" ]]; then
   xcode-select -p >/dev/null 2>&1 || die "the Xcode command line tools are required: xcode-select --install"
   ok "Xcode command line tools"
+  # Wails' file dialogs use UTType (macOS 11+). `wails build` links that framework by itself; plain go build does not.
+  export CGO_LDFLAGS="${CGO_LDFLAGS:+${CGO_LDFLAGS} }-framework UniformTypeIdentifiers -mmacosx-version-min=10.13"
 else
   die "unsupported system: ${OS} (use Linux or macOS; on Windows, build with the Wails CLI)"
 fi
