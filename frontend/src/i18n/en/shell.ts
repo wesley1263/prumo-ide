@@ -316,4 +316,21 @@ export const shell: Record<string, string> = {
   'Instruções extras': 'Extra instructions',
   'Ex.: "use Conventional Commits", "cite o número da tarefa da branch".': 'E.g. "use Conventional Commits", "mention the task number from the branch".',
   'Perguntar antes de enviar o diff ao agente': 'Ask before sending the diff to the agent',
+  // várias janelas (um projeto em cada)
+  'Abrir {name}': 'Open {name}',
+  'Abrir outro projeto': 'Open another project',
+  'Esta janela': 'This window',
+  'Nova janela': 'New window',
+  'Em uma nova janela, {current} continua aberto como está. Nesta janela, {current} é fechado (os arquivos são salvos antes).':
+    'In a new window, {current} stays open as it is. In this window, {current} is closed (files are saved first).',
+  'Lembrar a escolha e não perguntar de novo': 'Remember my choice and do not ask again',
+  'Dá para mudar em Configurações → Aparência.': 'You can change it in Settings → Appearance.',
+  'O projeto já está aberto em outra janela': 'The project is already open in another window',
+  'Ela foi trazida para a frente.': 'It was brought to the front.',
+  'Não foi possível abrir outra janela': 'Could not open another window',
+  'Abrir outro projeto com um já aberto': 'Opening another project while one is open',
+  'Não foi possível salvar': 'Could not save',
+  Perguntar: 'Ask',
+  'Nesta janela': 'In this window',
+  'Em nova janela': 'In a new window',
 }

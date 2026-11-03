@@ -21,7 +21,7 @@ export const useSettingsUi = create<{ open: boolean; page: PageId }>(() => ({ op
 export const openSettings = (page?: PageId) => useSettingsUi.setState((s) => ({ open: true, page: page ?? s.page }))
 
 const PAGES: Array<{ id: PageId; title: string; keywords: string[] }> = [
-  { id: 'appearance', title: t('Aparência'), keywords: ['tema', 'escuro', 'claro', 'cores', 'idioma', 'language', 'inglês', 'english', 'português'] },
+  { id: 'appearance', title: t('Aparência'), keywords: ['tema', 'escuro', 'claro', 'cores', 'idioma', 'language', 'inglês', 'english', 'português', 'janela', 'nova janela', 'projeto'] },
   { id: 'editor', title: t('Editor'), keywords: ['fonte', 'tamanho', 'formatar', 'salvar', 'imports', 'gofmt', 'dicas', 'inlay', 'parâmetros'] },
   { id: 'keymap', title: t('Atalhos'), keywords: ['teclado', 'keymap', 'atalho'] },
   { id: 'go', title: 'Go', keywords: ['sdk', 'goroot', 'versão', 'go'] },
@@ -239,6 +239,7 @@ function Body({ close }: { close: () => void }) {
               </RadioGroup>
             </Field>
           )}
+          {current?.id === 'appearance' && <OpenInField q={q} />}
           {current?.id === 'editor' && (
             <>
               <Field label={t('Tamanho da fonte')} q={q} hint={t('Padrão: {n}. Vale também para o terminal.', { n: DEFAULTS['editor.fontSize'] })} error={fsError}>
@@ -682,5 +683,37 @@ function AgentSettings({ q }: { q: string }) {
         {t('Perguntar antes de enviar o código do arquivo ao agente (IA no editor)')}
       </Checkbox>
     </section>
+  )
+}
+
+/** Abrir outro projeto com um já aberto: perguntar (padrão), sempre nesta janela ou sempre numa nova. Grava na hora. */
+function OpenInField({ q }: { q: string }) {
+  const value = usePrefs((s) => s['project.openIn'])
+  return (
+    <Field label={t('Abrir outro projeto com um já aberto')} q={q}>
+      <RadioGroup
+        aria-label={t('Abrir outro projeto com um já aberto')}
+        value={value}
+        onChange={(v) => void savePrefs({ 'project.openIn': v as Prefs['project.openIn'] }).catch((e) => toast('danger', t('Não foi possível salvar'), (e as Error).message))}
+        orientation="horizontal"
+        className="flex gap-2"
+      >
+        {(
+          [
+            ['ask', t('Perguntar')],
+            ['same', t('Nesta janela')],
+            ['new', t('Em nova janela')],
+          ] as const
+        ).map(([v, l]) => (
+          <Radio
+            key={v}
+            value={v}
+            className="cursor-default rounded-md border border-border px-3 py-1 text-sm text-text outline-none data-[focus-visible]:ring-2 data-[focus-visible]:ring-focus data-[selected]:border-accent data-[selected]:bg-selection"
+          >
+            {l}
+          </Radio>
+        ))}
+      </RadioGroup>
+    </Field>
   )
 }

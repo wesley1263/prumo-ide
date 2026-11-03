@@ -19,6 +19,7 @@ export interface Prefs {
   'commit.agentInstructions': string // instruções extras para o agente
   'commit.agentConsent': boolean // já confirmou que o diff vai para o provedor do agente
   'agent.editConsent': boolean // já confirmou que o código do arquivo vai para o provedor do agente (Ctrl+\\ no editor)
+  'project.openIn': 'ask' | 'same' | 'new' // abrir outro projeto com um já aberto: perguntar, nesta janela ou em nova
 }
 
 export const DEFAULTS: Prefs = {
@@ -36,6 +37,7 @@ export const DEFAULTS: Prefs = {
   'commit.agentInstructions': '',
   'commit.agentConsent': false,
   'agent.editConsent': false,
+  'project.openIn': 'ask',
 }
 
 export const usePrefs = create<Prefs>(() => ({ ...DEFAULTS }))

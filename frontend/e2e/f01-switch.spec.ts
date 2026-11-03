@@ -16,6 +16,8 @@ test('F01-H4 trocar de projeto pelo cabeçalho salva o pendente e abre o outro',
   await expect(item).toBeVisible()
   await expect(page.getByRole('menuitem', { name: /^loja-b/ })).toHaveCount(0) // o atual não aparece
   await item.click()
+  // Com um projeto aberto, pergunta onde abrir o outro (F01-H5 cobre a nova janela).
+  await page.getByRole('dialog', { name: 'Abrir loja-a' }).getByRole('button', { name: 'Esta janela' }).click()
 
   await expect(page.getByRole('banner').getByRole('button', { name: 'Projeto: loja-a' })).toBeVisible()
   await expect(page.getByRole('tree', { name: 'Arquivos do projeto' }).getByRole('treeitem', { name: /^loja-a/ })).toBeVisible()
@@ -24,5 +26,6 @@ test('F01-H4 trocar de projeto pelo cabeçalho salva o pendente e abre o outro',
   // "Abrir ou clonar outro…" volta à tela inicial.
   await page.getByRole('banner').getByRole('button', { name: 'Projeto: loja-a' }).click()
   await page.getByRole('menuitem', { name: 'Abrir ou clonar outro…' }).click()
+  await page.getByRole('dialog', { name: 'Abrir outro projeto' }).getByRole('button', { name: 'Esta janela' }).click()
   await expect(page.getByRole('button', { name: 'Clonar', exact: true })).toBeVisible()
 })

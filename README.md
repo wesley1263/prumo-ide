@@ -65,6 +65,8 @@ releases yet: [the installer](#install) builds it from source in one step.
 - Create a new Go module, clone a repository, download a Go SDK from go.dev (checked against the published
   SHA-256)
 - Restricted mode for untrusted projects: nothing from the project runs until you trust it
+- Several projects at once, each in its own window: opening another project asks whether to use this window
+  or a new one, and a project that is already open in another window is brought to the front
 
 ## Install
 

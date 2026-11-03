@@ -32,7 +32,7 @@ export function HeaderBar() {
   const configs = useApp((s) => s.runConfigs)
   const selected = useApp((s) => s.selectedConfig)
   const runs = useApp((s) => s.runs)
-  const { setTheme, closeProject, switchProject, selectConfig, runConfig, stopRun } = useApp.getState()
+  const { setTheme, closeProject, requestOpen, selectConfig, runConfig, stopRun } = useApp.getState()
   const recent = useApp((s) => s.recent)
   const home = useApp((s) => s.boot?.homeDir ?? '')
   const cfg = configs.find((c) => c.id === selected)
@@ -86,8 +86,9 @@ export function HeaderBar() {
         }
         items={projectMenu}
         onAction={(id) => {
-          if (id === 'welcome') void closeProject()
-          else if (id.startsWith('p:')) void switchProject(id.slice(2))
+          // Outro projeto ou a tela inicial: nesta janela ou em uma nova (pergunta, por padrão).
+          if (id === 'welcome') void requestOpen(null)
+          else if (id.startsWith('p:')) void requestOpen(id.slice(2))
         }}
       />
       <BranchesWidget />

@@ -10,6 +10,9 @@ import (
 	"context"
 	"embed"
 	"log"
+	"os"
+	"sort"
+	"time"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -20,6 +23,7 @@ import (
 
 	"prumo/internal/app"
 	"prumo/internal/events"
+	"prumo/internal/windows"
 )
 
 //go:embed all:frontend/dist
@@ -32,13 +36,20 @@ var assets embed.FS
 var appIcon []byte
 
 func main() {
-	core, err := app.New(context.Background(), app.Options{AllowedOrigins: app.WailsOrigins})
+	// --project <pasta>: esta janela foi aberta por outra para um projeto (cada janela é um processo).
+	core, err := app.New(context.Background(), app.Options{AllowedOrigins: app.WailsOrigins, InitialProject: windows.ProjectArg(os.Args[1:])})
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Todos os serviços que a UI chama (os mesmos do modo dev): um serviço novo não fica de fora do app.
 	services := core.Services()
-	bind := []any{}
-	for _, name := range []string{"App", "Projects", "Dialogs", "Workspace", "Settings", "Sdks", "Tools", "Files", "Git", "RunConfigs", "Runs", "Debug", "Breakpoints", "Tests", "Search", "Terminal"} {
+	names := make([]string, 0, len(services))
+	for name := range services {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	bind := make([]any, 0, len(names))
+	for _, name := range names {
 		bind = append(bind, services[name])
 	}
 
@@ -56,6 +67,15 @@ func main() {
 				return wruntime.OpenDirectoryDialog(ctx, wruntime.OpenDialogOptions{Title: title})
 			}
 			core.QuitApp = func() { wruntime.Quit(ctx) }
+			core.SetTitle = func(title string) { wruntime.WindowSetTitle(ctx, title) }
+			// Outra janela pediu esta para a frente (o projeto já está aberto aqui). "Sempre no topo" por um
+			// instante vence a proteção contra roubo de foco de alguns gerenciadores de janela.
+			core.FocusWindow = func() {
+				wruntime.WindowUnminimise(ctx)
+				wruntime.WindowShow(ctx)
+				wruntime.WindowSetAlwaysOnTop(ctx, true)
+				time.AfterFunc(400*time.Millisecond, func() { wruntime.WindowSetAlwaysOnTop(ctx, false) })
+			}
 		},
 		// Fechar com arquivos não salvos: segura a janela, a UI salva tudo e chama App.Quit.
 		OnBeforeClose: func(ctx context.Context) bool {

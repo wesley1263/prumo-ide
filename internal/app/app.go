@@ -21,6 +21,7 @@ import (
 	"prumo/internal/store"
 	"prumo/internal/term"
 	"prumo/internal/tools"
+	"prumo/internal/windows"
 	"prumo/internal/workspace"
 )
 
@@ -49,6 +50,7 @@ type Options struct {
 	BridgeAddr     string   // "" = 127.0.0.1:0
 	AllowedOrigins []string // Origins da UI
 	Dev            bool
+	InitialProject string // pasta para abrir ao iniciar (--project: janela nova aberta por outra janela)
 }
 
 // WailsOrigins são as Origins da página do app nos três sistemas.
@@ -109,6 +111,8 @@ func New(ctx context.Context, opt Options) (*api.Core, error) {
 		Sdks:    sdk.New(db, finder),
 		Agent:   agent.NewRunner(),
 		Dev:     opt.Dev,
+
+		InitialProject: opt.InitialProject,
 	}
 	var rpc *bridge.Dispatcher
 	if opt.Dev {
@@ -120,11 +124,24 @@ func New(ctx context.Context, opt Options) (*api.Core, error) {
 		return nil, err
 	}
 	br.SetTerminals(c.Terms)
+	br.SetFocus(func() {
+		if c.FocusWindow != nil {
+			c.FocusWindow()
+		}
+	})
 	if err := br.Start(); err != nil {
 		db.Close()
 		return nil, fmt.Errorf("abrir a ponte local: %w", err)
 	}
 	c.Bridge = br
+	// Várias janelas (um processo cada) só no app: no modo dev a UI é uma aba do navegador.
+	if !opt.Dev {
+		if c.Windows, err = windows.New(filepath.Join(opt.DataDir, "windows"), br.Port(), br.Token()); err != nil {
+			_ = br.Close()
+			db.Close()
+			return nil, fmt.Errorf("registrar a janela: %w", err)
+		}
+	}
 	return c, nil
 }
 
@@ -147,6 +164,7 @@ func Shutdown(c *api.Core) {
 	c.Debug.StopAll()
 	c.Runs.StopAll()
 	c.Hub.StopAll()
+	c.Windows.Close()
 	_ = c.Bridge.Close()
 	_ = c.DB.Close()
 }

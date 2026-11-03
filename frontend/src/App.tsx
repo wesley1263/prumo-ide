@@ -3,7 +3,7 @@ import { useApp } from './state/app'
 import { Welcome } from './welcome/Welcome'
 import { AppShell } from './shell/AppShell'
 import { SettingsDialog } from './settings/SettingsDialog'
-import { TrustDialog, ConflictDialog } from './shell/Dialogs'
+import { TrustDialog, ConflictDialog, OpenWhereDialog } from './shell/Dialogs'
 import { DesignPage } from './design/DesignPage'
 import { EmptyState, ToastViewport } from './design/feedback'
 import { Button } from './design/controls'
@@ -53,6 +53,7 @@ export default function App() {
       {screen}
       <TrustDialog />
       <ConflictDialog />
+      <OpenWhereDialog />
       <SettingsDialog />
       <ToastViewport />
     </>

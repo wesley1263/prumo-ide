@@ -135,11 +135,22 @@ export const useLayout = create<LayoutState>((set, get) => ({
   },
   setFloat: (id, box) => set({ floats: { ...get().floats, [id]: box } }),
   resize: (side, px) => set({ sizes: { ...get().sizes, [side]: px } }),
-  restore: (s) =>
+  // O layout salvo pode vir de outra versão do Prumo e citar janelas que esta não tem: elas ficam de fora
+  // (sem isso, desenhar a janela desconhecida derruba a tela inteira).
+  restore: (s) => {
+    const known = (id: string) => toolWindows.some((w) => w.id === id)
+    const open = { ...get().open }
+    for (const side of ['left', 'bottom', 'right'] as const) {
+      const id = s.open?.[side]
+      if (id === null || (id !== undefined && known(id))) open[side] = id
+    }
+    const placement = Object.fromEntries(Object.entries(s.placement ?? {}).filter(([id, p]) => known(id) && ['left', 'bottom', 'right', 'float'].includes(p)))
+    const floats = Object.fromEntries(Object.entries(s.floats ?? {}).filter(([id]) => known(id)))
     set({
-      open: { ...get().open, ...(s.open ?? {}) },
+      open,
       sizes: { ...get().sizes, ...(s.sizes ?? {}) },
-      placement: { ...get().placement, ...(s.placement ?? {}) },
-      floats: { ...get().floats, ...(s.floats ?? {}) },
-    }),
+      placement: { ...get().placement, ...placement },
+      floats: { ...get().floats, ...floats },
+    })
+  },
 }))

@@ -64,7 +64,7 @@ export function WorktreesDialog() {
                 </>
               ) : (
                 <>
-                  <Button size="sm" isDisabled={w.current} onPress={() => (close(), void useApp.getState().switchProject(w.path))} aria-label={t('Abrir {path}', { path: w.path })}>
+                  <Button size="sm" isDisabled={w.current} onPress={() => (close(), void useApp.getState().requestOpen(w.path))} aria-label={t('Abrir {path}', { path: w.path })}>
                     {t('Abrir')}
                   </Button>
                   <Button size="sm" isDisabled={w.current || w.main} onPress={() => void remove(w, false)} aria-label={t('Remover {path}', { path: w.path })}>
@@ -99,7 +99,7 @@ export function AddWorktreeDialog() {
     try {
       const w = await api.Git.AddWorktree(project!.id, path, branch!, false)
       close()
-      if (openNow) await useApp.getState().switchProject(w.path)
+      if (openNow) await useApp.getState().requestOpen(w.path)
       else toast('success', t('Worktree criado'), w.path)
     } catch (e) {
       setError((e as Error).message)
