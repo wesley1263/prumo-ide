@@ -267,4 +267,9 @@ export const backend: Record<string, string> = {
   'idioma da mensagem deve ser "auto", "pt-BR" ou "en"': 'message language must be "auto", "pt-BR" or "en"',
   'instruções devem ser texto': 'instructions must be text',
   'instruções longas demais (máximo de 2000 caracteres)': 'instructions too long (2000 characters at most)',
+  // várias janelas
+  'abrir outra janela só funciona no app (no modo dev, a UI abre outra aba)': 'opening another window only works in the app (in dev mode, the UI opens another tab)',
+  'não foi possível achar o executável do Prumo para abrir outra janela': 'could not find the Prumo executable to open another window',
+  'não foi possível abrir outra janela: {0}': 'could not open another window: {0}',
+  'abrir projeto deve ser "ask", "same" ou "new"': 'open project must be "ask", "same" or "new"',
 }

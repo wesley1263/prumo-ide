@@ -51,6 +51,7 @@ type Server struct {
 	bus   *events.Bus
 	rpc   *Dispatcher
 	terms TermSource
+	focus func() // traz a janela para a frente (outra janela do Prumo pede pela rota /window/focus)
 }
 
 // TermSource são os terminais abertos (internal/term).
@@ -62,6 +63,9 @@ type TermSource interface {
 
 // SetTerminals liga a rota /term (antes de Start).
 func (s *Server) SetTerminals(t TermSource) { s.terms = t }
+
+// SetFocus liga a rota /window/focus (antes de Start): outra janela do Prumo pede para esta vir para a frente.
+func (s *Server) SetFocus(f func()) { s.focus = f }
 
 // OutputSource acha a saída de uma execução ou sessão de depuração pelo id.
 type OutputSource interface {
@@ -103,6 +107,12 @@ func (s *Server) Start() error {
 	mux.HandleFunc("GET /run/{runID}", s.guard(s.handleRun))
 	if s.terms != nil {
 		mux.HandleFunc("GET /term/{termID}", s.guard(s.handleTerm))
+	}
+	if s.focus != nil {
+		mux.HandleFunc("POST /window/focus", s.guard(func(w http.ResponseWriter, r *http.Request) {
+			s.focus()
+			w.WriteHeader(http.StatusNoContent)
+		}))
 	}
 	if s.cfg.Dev && s.rpc != nil {
 		mux.HandleFunc("POST /rpc", s.guard(s.handleRPC))

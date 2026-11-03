@@ -121,6 +121,8 @@ export interface Bootstrap {
   sdks: GoSdk[]
   tools: ToolsStatus
   homeDir: string
+  initialProject: string // janela nova aberta por outra: o projeto para abrir já
+  multiWindow: boolean // dá para abrir outra janela (no app; no modo dev, outra aba)
 }
 export interface FileNode {
   name: string
@@ -534,6 +536,9 @@ export interface Breakpoint {
 export const api = {
   App: {
     Bootstrap: () => call<Bootstrap>('App.Bootstrap'),
+    FocusProjectWindow: (path: string) => call<boolean>('App.FocusProjectWindow', path),
+    OpenWindow: (path: string) => call<void>('App.OpenWindow', path),
+    SetTitle: (title: string) => call<void>('App.SetTitle', title),
     SetDirty: (dirty: boolean) => call<void>('App.SetDirty', dirty),
     Quit: () => call<void>('App.Quit'),
   },

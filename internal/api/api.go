@@ -30,6 +30,7 @@ import (
 	"prumo/internal/store"
 	"prumo/internal/term"
 	"prumo/internal/tools"
+	"prumo/internal/windows"
 	"prumo/internal/workspace"
 )
 
@@ -55,6 +56,13 @@ type Core struct {
 	PickDir func(title string) (string, error)
 	// QuitApp fecha o app de verdade (runtime.Quit). Nil no modo dev.
 	QuitApp func()
+	// Windows registra esta janela e acha as outras (uma por processo). Nil no modo dev.
+	Windows *windows.Registry
+	// InitialProject é a pasta que esta janela abre ao iniciar (--project, quando outra janela a abriu).
+	InitialProject string
+	// FocusWindow traz a janela para a frente; SetTitle troca o título. Nil no modo dev.
+	FocusWindow func()
+	SetTitle    func(title string)
 
 	dirty atomic.Bool
 }
@@ -106,6 +114,9 @@ type Bootstrap struct {
 	Sdks        []store.GoSdk              `json:"sdks"`
 	Tools       tools.Status               `json:"tools"`
 	HomeDir     string                     `json:"homeDir"`
+	// InitialProject: pasta para abrir já (janela nova aberta por outra); MultiWindow: dá para abrir outra janela.
+	InitialProject string `json:"initialProject"`
+	MultiWindow    bool   `json:"multiWindow"`
 }
 
 // Bootstrap monta o estado inicial. Na primeira vez detecta os Go SDKs.
@@ -132,7 +143,47 @@ func (a *App) Bootstrap() (Bootstrap, error) {
 	return Bootstrap{
 		BridgePort: a.c.Bridge.Port(), BridgeToken: a.c.Bridge.Token(), Dev: a.c.Dev, Platform: runtime.GOOS,
 		Settings: settings, Recent: recent, Sdks: sdks, Tools: a.c.Tools.Status(ctx), HomeDir: home,
+		InitialProject: a.c.InitialProject, MultiWindow: a.c.Windows != nil,
 	}, nil
+}
+
+// FocusProjectWindow traz para a frente a outra janela que já tem o projeto aberto. Devolve false se nenhuma
+// tem (aí a UI abre o projeto nesta janela ou numa nova).
+func (a *App) FocusProjectWindow(path string) (bool, error) {
+	if a.c.Windows == nil {
+		return false, nil
+	}
+	abs, err := resolveProjectPath(path)
+	if err != nil {
+		return false, err
+	}
+	return a.c.Windows.FocusOther(abs), nil
+}
+
+// OpenWindow abre o projeto em path numa janela nova ("" = janela nova na tela inicial). Se outra janela já
+// tem o projeto, traz essa para a frente.
+func (a *App) OpenWindow(path string) error {
+	if a.c.Windows == nil {
+		return errors.New("abrir outra janela só funciona no app (no modo dev, a UI abre outra aba)")
+	}
+	if path != "" {
+		abs, err := resolveProjectPath(path)
+		if err != nil {
+			return err
+		}
+		if a.c.Windows.FocusOther(abs) {
+			return nil
+		}
+		path = abs
+	}
+	return windows.Launch(path)
+}
+
+// SetTitle troca o título da janela (o nome do projeto aparece na barra de tarefas).
+func (a *App) SetTitle(title string) {
+	if a.c.SetTitle != nil {
+		a.c.SetTitle(title)
+	}
 }
 
 // SetDirty é chamado pela UI sempre que muda o "há algo não salvo". O fechamento da janela consulta.
@@ -171,11 +222,11 @@ type OpenResult struct {
 	NeedsTrust bool            `json:"needsTrust"`
 }
 
-// Open abre uma pasta como projeto.
-func (p *Projects) Open(path string) (OpenResult, error) {
+// resolveProjectPath leva o que o usuário digitou (~, relativo, link) ao caminho absoluto real da pasta.
+func resolveProjectPath(path string) (string, error) {
 	path = strings.TrimSpace(path)
 	if path == "" {
-		return OpenResult{}, errors.New("informe uma pasta")
+		return "", errors.New("informe uma pasta")
 	}
 	if strings.HasPrefix(path, "~") {
 		if home, err := os.UserHomeDir(); err == nil {
@@ -184,17 +235,26 @@ func (p *Projects) Open(path string) (OpenResult, error) {
 	}
 	abs, err := filepath.Abs(path)
 	if err != nil {
-		return OpenResult{}, err
+		return "", err
 	}
 	if real, err := filepath.EvalSymlinks(abs); err == nil {
 		abs = real
 	}
 	st, err := os.Stat(abs)
 	if err != nil {
-		return OpenResult{}, fmt.Errorf("pasta não encontrada: %s", abs)
+		return "", fmt.Errorf("pasta não encontrada: %s", abs)
 	}
 	if !st.IsDir() {
-		return OpenResult{}, fmt.Errorf("não é uma pasta: %s", abs)
+		return "", fmt.Errorf("não é uma pasta: %s", abs)
+	}
+	return abs, nil
+}
+
+// Open abre uma pasta como projeto.
+func (p *Projects) Open(path string) (OpenResult, error) {
+	abs, err := resolveProjectPath(path)
+	if err != nil {
+		return OpenResult{}, err
 	}
 	ctx := context.Background()
 	pr, err := p.c.DB.TouchProject(ctx, abs, filepath.Base(abs))
@@ -208,6 +268,7 @@ func (p *Projects) Open(path string) (OpenResult, error) {
 	if err != nil {
 		return OpenResult{}, err
 	}
+	_ = p.c.Windows.Opened(o.RootPath) // as outras janelas passam a saber que o projeto está aqui
 	return OpenResult{Project: o, NeedsTrust: !o.Trusted}, nil
 }
 
@@ -222,6 +283,9 @@ func (p *Projects) SetTrusted(projectID string, trusted bool) (*workspace.Open, 
 
 // Close fecha o projeto: para o gopls e as execuções dele.
 func (p *Projects) Close(projectID string) error {
+	if o, err := p.c.Reg.Get(projectID); err == nil {
+		_ = p.c.Windows.Closed(o.RootPath)
+	}
 	p.c.Reg.Remove(projectID)
 	return nil
 }
@@ -349,6 +413,13 @@ var settingRules = map[string]func(raw json.RawMessage) error{
 		}
 		if _, err := agent.Resolve("custom", v, run.SplitArgs); err != nil {
 			return err
+		}
+		return nil
+	},
+	"project.openIn": func(raw json.RawMessage) error {
+		var v string
+		if json.Unmarshal(raw, &v) != nil || (v != "ask" && v != "same" && v != "new") {
+			return errors.New(`abrir projeto deve ser "ask", "same" ou "new"`)
 		}
 		return nil
 	},

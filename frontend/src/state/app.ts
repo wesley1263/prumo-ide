@@ -6,7 +6,7 @@ import { on } from '../lib/events'
 import { toast } from '../design/feedback'
 import { reconnectLsp } from '../editor/lsp/adapter'
 import { useDocs } from '../editor/docs'
-import { loadPrefs } from './settings'
+import { loadPrefs, usePrefs } from './settings'
 
 export type Theme = 'dark' | 'light'
 
@@ -36,6 +36,13 @@ interface AppState {
   closeProject: () => Promise<void>
   /** Troca de projeto: grava o que estiver pendente, fecha o atual e abre o outro. */
   switchProject: (path: string) => Promise<void>
+  /** Abrir outro projeto (path) ou a tela inicial (null) com um projeto aberto: nesta janela ou em outra,
+   * conforme a preferência (perguntar, por padrão). Se outra janela já tem o projeto, ela vem para a frente. */
+  requestOpen: (path: string | null) => Promise<void>
+  /** O diálogo "Abrir em: esta janela / nova janela" (o que vai abrir: um projeto ou a tela inicial). */
+  openWhere: { path: string | null } | null
+  answerOpenWhere: (where: 'same' | 'new' | null, path?: string | null) => Promise<void>
+  openInNewWindow: (path: string | null) => Promise<void>
   answerTrust: (trusted: boolean) => Promise<void>
   refreshGit: () => Promise<void>
   refreshRunConfigs: () => Promise<void>
@@ -64,6 +71,7 @@ export const useApp = create<AppState>((set, get) => ({
   selectedConfig: null,
   runs: [],
   lsp: { state: 'stopped', message: '' },
+  openWhere: null,
 
   init: async () => {
     try {
@@ -82,6 +90,16 @@ export const useApp = create<AppState>((set, get) => ({
     } catch (e) {
       set({ bootError: String((e as Error).message ?? e) })
       return
+    }
+    // Janela aberta por outra para um projeto: no app vem do --project; no modo dev, de ?project= na URL.
+    const initial = get().boot?.initialProject || new URLSearchParams(location.search).get('project')
+    if (initial && !get().project) {
+      history.replaceState(null, '', location.pathname + location.hash) // recarregar não abre de novo
+      // Aberto por linha de comando com o projeto já aberto em outra janela: ela vem para a frente e esta fecha.
+      if (get().boot?.multiWindow && (await api.App.FocusProjectWindow(initial).catch(() => false))) return void api.App.Quit()
+      get()
+        .openProject(initial)
+        .catch((e) => toast('danger', t('Não foi possível abrir o projeto'), String((e as Error).message)))
     }
     on('git:status', ({ projectId }) => {
       if (projectId !== get().project?.id) return
@@ -131,6 +149,11 @@ export const useApp = create<AppState>((set, get) => ({
   refreshRecent: async () => set({ recent: await api.Projects.ListRecent() }),
 
   openProject: async (path) => {
+    // Já aberto em outra janela: ela vem para a frente (o mesmo projeto não abre duas vezes).
+    if (await api.App.FocusProjectWindow(path).catch(() => false)) {
+      toast('info', t('O projeto já está aberto em outra janela'), t('Ela foi trazida para a frente.'))
+      return
+    }
     const { project, needsTrust } = await api.Projects.Open(path)
     set({ project, trustAsked: needsTrust, git: null, runs: [], runConfigs: [], selectedConfig: null })
     get().refreshGit()
@@ -145,6 +168,45 @@ export const useApp = create<AppState>((set, get) => ({
     await api.Projects.Close(p.id).catch(() => {})
     set({ project: null, git: null, runs: [], runConfigs: [] })
     get().refreshRecent().catch(() => {})
+  },
+
+  requestOpen: async (path) => {
+    const cur = get().project
+    if (path && cur && path === cur.rootPath) return
+    if (!cur) {
+      if (path) await get().openProject(path).catch((e) => toast('danger', t('Não foi possível abrir o projeto'), String((e as Error).message)))
+      return
+    }
+    if (path && (await api.App.FocusProjectWindow(path).catch(() => false))) {
+      toast('info', t('O projeto já está aberto em outra janela'), t('Ela foi trazida para a frente.'))
+      return
+    }
+    const pref = usePrefs.getState()['project.openIn']
+    if (pref === 'ask') return set({ openWhere: { path } })
+    await get().answerOpenWhere(pref, path)
+  },
+
+  answerOpenWhere: async (where, path = get().openWhere?.path ?? null) => {
+    set({ openWhere: null })
+    if (where === 'new') return get().openInNewWindow(path)
+    if (where === 'same') {
+      if (path) await get().switchProject(path)
+      else await get().closeProject() // a tela inicial: abrir, clonar ou criar outro
+    }
+  },
+
+  openInNewWindow: async (path) => {
+    // No modo dev a UI é uma aba do navegador: a "janela nova" é outra aba (mesmo backend).
+    if (!get().boot?.multiWindow) {
+      window.open(location.pathname + (path ? '?project=' + encodeURIComponent(path) : ''), '_blank')
+      return
+    }
+    await useDocs.getState().autosave() // nada fica só nesta janela sem salvar
+    try {
+      await api.App.OpenWindow(path ?? '')
+    } catch (e) {
+      toast('danger', t('Não foi possível abrir outra janela'), String((e as Error).message))
+    }
   },
 
   switchProject: async (path) => {
@@ -221,3 +283,13 @@ export const useApp = create<AppState>((set, get) => ({
     await api.Runs.Stop(runId).catch((e) => toast('danger', t('Não foi possível parar'), String(e.message)))
   },
 }))
+
+// Título da janela com o nome do projeto: com várias janelas abertas, a barra de tarefas mostra qual é qual.
+let lastTitle = ''
+useApp.subscribe((st) => {
+  const title = st.project ? `${st.project.name} – Prumo` : 'Prumo'
+  if (title === lastTitle) return
+  lastTitle = title
+  document.title = title
+  if (st.boot) api.App.SetTitle(title).catch(() => {})
+})

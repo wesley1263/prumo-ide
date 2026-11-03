@@ -1,8 +1,10 @@
-// Diálogos globais: confiança no projeto e conflito ao salvar.
-import { Button } from '../design/controls'
+// Diálogos globais: confiança no projeto, conflito ao salvar e em que janela abrir outro projeto.
+import { useState } from 'react'
+import { Button, Checkbox } from '../design/controls'
 import { Dialog } from '../design/feedback'
 import { useApp } from '../state/app'
 import { useDocs } from '../editor/docs'
+import { savePrefs } from '../state/settings'
 import { t } from '../i18n'
 
 export function TrustDialog() {
@@ -56,6 +58,47 @@ export function ConflictDialog() {
       <p>
         <span className="font-mono">{doc?.key}</span> {t('foi alterado fora da IDE depois que você o abriu. Escolha qual versão fica.')}
       </p>
+    </Dialog>
+  )
+}
+
+/** Abrir outro projeto com um já aberto: nesta janela (fecha o atual) ou numa nova (o atual continua). */
+export function OpenWhereDialog() {
+  const req = useApp((s) => s.openWhere)
+  const answer = useApp((s) => s.answerOpenWhere)
+  const current = useApp((s) => s.project?.name ?? '')
+  const home = useApp((s) => s.boot?.homeDir ?? '')
+  const [remember, setRemember] = useState(false)
+  const choose = (where: 'same' | 'new') => {
+    if (remember) void savePrefs({ 'project.openIn': where })
+    setRemember(false)
+    void answer(where)
+  }
+  const target = req?.path ? req.path.replace(home, '~') : null
+  return (
+    <Dialog
+      title={target ? t('Abrir {name}', { name: target.split('/').pop() ?? target }) : t('Abrir outro projeto')}
+      isOpen={!!req}
+      onOpenChange={(o) => !o && void answer(null)}
+      size="md"
+      footer={
+        <>
+          <Button onPress={() => void answer(null)}>{t('Cancelar')}</Button>
+          <Button onPress={() => choose('same')}>{t('Esta janela')}</Button>
+          <Button variant="primary" autoFocus onPress={() => choose('new')}>
+            {t('Nova janela')}
+          </Button>
+        </>
+      }
+    >
+      {target && <p className="selectable mb-2 break-all rounded-sm bg-bg px-2 py-1 font-mono text-xs text-text-muted">{target}</p>}
+      <p className="mb-3">
+        {t('Em uma nova janela, {current} continua aberto como está. Nesta janela, {current} é fechado (os arquivos são salvos antes).', { current })}
+      </p>
+      <Checkbox isSelected={remember} onChange={setRemember}>
+        {t('Lembrar a escolha e não perguntar de novo')}
+      </Checkbox>
+      <p className="mt-1 text-xs text-text-muted">{t('Dá para mudar em Configurações → Aparência.')}</p>
     </Dialog>
   )
 }
