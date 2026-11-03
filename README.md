@@ -100,6 +100,12 @@ cd frontend && npm ci && npm run build && cd ..
 go build -tags desktop,production,webkit2_41 -o build/bin/prumo .   # drop webkit2_41 on macOS
 ```
 
+On macOS, also link the framework the native file dialogs need:
+
+```bash
+CGO_LDFLAGS="-framework UniformTypeIdentifiers" go build -tags desktop,production -o build/bin/prumo .
+```
+
 With the [Wails CLI](https://wails.io/docs/gettingstarted/installation) installed, `wails build -tags webkit2_41`
 does the same in one step.
 
