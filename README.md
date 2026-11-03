@@ -79,7 +79,8 @@ git clone <this repository> prumo && cd prumo
 
 It checks the requirements, offers to install the missing system packages (asking before it uses `sudo`),
 installs the UI dependencies, builds the UI and the app, puts `prumo` in `~/.local/bin` with a menu entry, and
-offers to install `gopls` and `dlv` (Delve) if you don't have them. Run `./install.sh --help` for the options
+offers to install `gopls` and `dlv` (Delve) if you don't have them. On macOS the app goes to
+`~/Applications/Prumo.app`, and `prumo` in `~/.local/bin` starts it: macOS apps need to run from a bundle. Run `./install.sh --help` for the options
 (`--prefix`, `--yes`, `--no-tools`).
 
 To remove it, run `./uninstall.sh`. Your settings, recent projects and breakpoints stay unless you add

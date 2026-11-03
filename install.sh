@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Prumo installer: checks the requirements, builds the UI and the app, and installs it for the current user.
 #
-#   ./install.sh                 build and install to ~/.local (binary in ~/.local/bin/prumo)
+#   ./install.sh                 build and install to ~/.local (binary in ~/.local/bin/prumo; on macOS, the app in
+#                                ~/Applications/Prumo.app and the prumo command in ~/.local/bin)
 #   ./install.sh --prefix DIR    install under DIR instead (binary in DIR/bin)
 #   ./install.sh --yes           don't ask: install missing system packages and Go tools
 #   ./install.sh --no-tools      don't install gopls and dlv
@@ -46,6 +47,8 @@ have() { command -v "$1" >/dev/null 2>&1; }
 version_ge() { [[ "$(printf '%s\n%s\n' "$2" "$1" | sort -V | head -n1)" == "$2" ]]; }
 
 DESKTOP_FILE="${PREFIX}/share/applications/${APP}.desktop"
+MAC_APP="${HOME}/Applications/Prumo.app"
+LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 if [[ $UNINSTALL -eq 1 ]]; then
   # Um lugar só para desinstalar: o uninstall.sh (que também sabe apagar as configurações com --purge).
@@ -122,7 +125,55 @@ ok "build/bin/${APP}"
 
 step "Installing to ${PREFIX}"
 mkdir -p "${BIN_DIR}"
-install -m 0755 "build/bin/${APP}" "${BIN_DIR}/${APP}"
+if [[ "$OS" == "Darwin" ]]; then
+  # On macOS the app has to run from a .app bundle: outside one, the native open dialog closes as soon as it
+  # appears, and there is no Dock icon. The command in BIN_DIR runs the binary inside the bundle.
+  bundle_tmp="$(mktemp -d)/Prumo.app"
+  mkdir -p "${bundle_tmp}/Contents/MacOS" "${bundle_tmp}/Contents/Resources"
+  install -m 0755 "build/bin/${APP}" "${bundle_tmp}/Contents/MacOS/${APP}"
+  iconset="$(dirname "$bundle_tmp")/${APP}.iconset"
+  mkdir -p "$iconset"
+  for s in 16 32 128 256 512; do
+    sips -z "$s" "$s" "${ROOT}/build/appicon.png" --out "${iconset}/icon_${s}x${s}.png" >/dev/null
+    sips -z $((s * 2)) $((s * 2)) "${ROOT}/build/appicon.png" --out "${iconset}/icon_${s}x${s}@2x.png" >/dev/null
+  done
+  iconutil -c icns "$iconset" -o "${bundle_tmp}/Contents/Resources/iconfile.icns"
+  VERSION="$(sed -n 's/.*"productVersion": *"\([^"]*\)".*/\1/p' "${ROOT}/wails.json")"
+  # Opened from the Dock or Finder, an app gets a bare PATH (no Homebrew, no Go): keep the one from this shell.
+  APP_PATH="$(printf '%s' "$PATH" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')"
+  cat > "${bundle_tmp}/Contents/Info.plist" <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleName</key><string>Prumo</string>
+  <key>CFBundleDisplayName</key><string>Prumo</string>
+  <key>CFBundleExecutable</key><string>${APP}</string>
+  <key>CFBundleIdentifier</key><string>io.github.wesley1263.prumo</string>
+  <key>CFBundleVersion</key><string>${VERSION}</string>
+  <key>CFBundleShortVersionString</key><string>${VERSION}</string>
+  <key>CFBundleIconFile</key><string>iconfile</string>
+  <key>LSMinimumSystemVersion</key><string>11.0</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.developer-tools</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
+  <key>LSEnvironment</key><dict><key>PATH</key><string>${APP_PATH}</string></dict>
+</dict>
+</plist>
+EOF
+  codesign --force --deep --sign - "$bundle_tmp" >/dev/null 2>&1 || warn "could not sign the bundle (ad hoc); it should still open"
+  mkdir -p "$(dirname "$MAC_APP")"
+  rm -rf "$MAC_APP"
+  mv "$bundle_tmp" "$MAC_APP"
+  rm -rf "$(dirname "$bundle_tmp")"
+  [[ -x "$LSREGISTER" ]] && "$LSREGISTER" -f "$MAC_APP" >/dev/null 2>&1 || true
+  ok "$MAC_APP"
+  printf '#!/bin/sh\nexec "%s/Contents/MacOS/%s" "$@"\n' "$MAC_APP" "$APP" > "${BIN_DIR}/${APP}"
+  chmod 0755 "${BIN_DIR}/${APP}"
+else
+  install -m 0755 "build/bin/${APP}" "${BIN_DIR}/${APP}"
+fi
 ok "${BIN_DIR}/${APP}"
 
 if [[ "$OS" == "Linux" ]]; then
@@ -167,6 +218,7 @@ fi
 
 echo
 printf '%sPrumo is installed.%s Start it with: %s%s%s\n' "$B" "$N" "$B" "${APP}" "$N"
+[[ "$OS" == "Darwin" ]] && echo "  It is also in ~/Applications (Launchpad and Spotlight find it as Prumo)."
 case ":${PATH}:" in
   *":${BIN_DIR}:"*) ;;
   *) warn "${BIN_DIR} is not on your PATH. Add this to your shell profile: export PATH=\"${BIN_DIR}:\$PATH\"" ;;
