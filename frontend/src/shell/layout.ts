@@ -9,6 +9,7 @@ import {
   FolderTree,
   GitBranch,
   GitCommitHorizontal,
+  GitPullRequest,
   ListTree,
   Play,
   Search,
@@ -33,6 +34,7 @@ export interface ToolWindowDef {
 export const toolWindows: ToolWindowDef[] = [
   { id: 'project', title: t('Projeto'), side: 'left', icon: FolderTree, keys: 'Alt+1', screen: 'S05' },
   { id: 'commit', title: t('Commit'), side: 'left', icon: GitCommitHorizontal, keys: 'Alt+0', screen: 'S20' },
+  { id: 'mergeRequests', title: t('Merge requests'), side: 'left', icon: GitPullRequest, screen: 'S24' },
   { id: 'structure', title: t('Estrutura'), side: 'left', icon: ListTree, keys: 'Alt+7', screen: 'S08' },
   { id: 'run', title: t('Executar'), side: 'bottom', icon: Play, keys: 'Alt+4', screen: 'S13' },
   { id: 'debug', title: t('Depurar'), side: 'bottom', icon: Bug, keys: 'Alt+5', screen: 'S15' },

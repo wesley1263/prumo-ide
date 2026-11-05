@@ -40,6 +40,7 @@ function translateResult(method: string, r: unknown): unknown {
   const o = r as Record<string, unknown>
   const tr = (k: string) => (typeof o[k] === 'string' ? { [k]: translateBackend(o[k] as string) } : {})
   if (method === 'RunConfigs.Validate') return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === 'string' ? translateBackend(v) : v]))
+  if (method === 'GitLab.Context') return { ...o, ...tr('error') }
   if (method === 'Git.CloneStatus') return { ...o, ...tr('phase'), ...tr('error') }
   if (method === 'Sdks.Download' || method === 'Sdks.DownloadStatus') return { ...o, ...tr('error') }
   if (method.startsWith('Git.') && !Array.isArray(r)) return { ...o, ...tr('message') }
@@ -531,6 +532,106 @@ export interface Breakpoint {
   logMessage: string | null
 }
 
+// ---------------------------------------------------------------- GitLab (merge requests)
+
+export interface GlUser {
+  id: number
+  username: string
+  name: string
+  avatarUrl: string
+  webUrl: string
+}
+
+export interface GlProject {
+  id: number
+  path: string
+  webUrl: string
+  defaultBranch: string
+}
+
+export interface GitLabContext {
+  remote: string
+  remoteUrl: string
+  host: string
+  path: string
+  isGitLab: boolean
+  server: string
+  authSource: '' | 'account' | 'glab' | 'env'
+  user: GlUser | null
+  project: GlProject | null
+  currentBranch: string
+  template: string
+  error: string
+}
+
+export interface MergeRequest {
+  iid: number
+  title: string
+  state: 'opened' | 'merged' | 'closed' | 'locked'
+  draft: boolean
+  author: GlUser
+  sourceBranch: string
+  targetBranch: string
+  webUrl: string
+  createdAt: string
+  updatedAt: string
+  comments: number
+  labels: string[]
+  reviewers: GlUser[]
+  assignees: GlUser[]
+  hasConflicts: boolean
+  mergeStatus: string
+  pipeline: { id: number; status: string; webUrl: string } | null
+}
+
+export interface MrNote {
+  id: number
+  body: string
+  author: GlUser
+  createdAt: string
+  system: boolean
+  path: string
+  line: number
+}
+
+export interface MergeRequestDetail extends MergeRequest {
+  description: string
+  sourceProjectId: number
+  targetProjectId: number
+  baseSha: string
+  headSha: string
+  startSha: string
+  approvedBy: GlUser[]
+  approvalsLeft: number
+  notes: MrNote[]
+  mergedBy: GlUser | null
+}
+
+export interface MrFilter {
+  state: 'opened' | 'merged' | 'closed' | 'all'
+  scope: 'all' | 'mine' | 'review' | 'assigned'
+  search: string
+  source?: string
+}
+
+export interface CreateMrRequest {
+  sourceBranch: string
+  targetBranch: string
+  title: string
+  description: string
+  draft: boolean
+  reviewerIds: number[]
+  assignToMe: boolean
+  removeSourceBranch: boolean
+  squash: boolean
+  push: boolean
+}
+
+export interface GitLabAccount {
+  server: string
+  username: string
+}
+
 // ---------------------------------------------------------------- serviços
 
 export const api = {
@@ -636,6 +737,22 @@ export const api = {
     RefDiff: (projectId: string, base: string, other: string, path: string, oldPath = '') => call<DiffContents>('Git.RefDiff', projectId, base, other, path, oldPath),
     Blame: (projectId: string, path: string) => call<Blame>('Git.Blame', projectId, path),
     Push: (projectId: string, req: PushRequest) => call<OpResult>('Git.Push', projectId, req),
+  },
+  GitLab: {
+    Context: (projectId: string) => call<GitLabContext>('GitLab.Context', projectId),
+    List: (projectId: string, filter: MrFilter) => call<MergeRequest[]>('GitLab.List', projectId, filter),
+    Get: (projectId: string, iid: number) => call<MergeRequestDetail>('GitLab.Get', projectId, iid),
+    Files: (projectId: string, iid: number) => call<{ base: string; head: string; files: CommitFile[] }>('GitLab.Files', projectId, iid),
+    PrepareCheckout: (projectId: string, iid: number) => call<string>('GitLab.PrepareCheckout', projectId, iid),
+    Create: (projectId: string, req: CreateMrRequest) => call<MergeRequest>('GitLab.Create', projectId, req),
+    Comment: (projectId: string, iid: number, body: string) => call<MrNote>('GitLab.Comment', projectId, iid, body),
+    Members: (projectId: string, query: string) => call<GlUser[]>('GitLab.Members', projectId, query),
+    Accounts: () => call<GitLabAccount[]>('GitLab.Accounts'),
+    SaveAccount: (server: string, token: string) => call<GitLabAccount>('GitLab.SaveAccount', server, token),
+    RemoveAccount: (server: string) => call<void>('GitLab.RemoveAccount', server),
+    SuggestDescription: (projectId: string, target: string, uiLang: string) =>
+      call<{ title: string; description: string; agent: string }>('GitLab.SuggestDescription', projectId, target, uiLang),
+    CancelSuggest: (projectId: string) => call<void>('GitLab.CancelSuggest', projectId),
   },
   RunConfigs: {
     List: (projectId: string) => call<RunConfig[]>('RunConfigs.List', projectId),

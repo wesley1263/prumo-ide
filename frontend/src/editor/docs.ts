@@ -70,8 +70,8 @@ const languageOf = (path: string): string => {
 }
 
 export const tabKeyOf = (t: Tab) => (t.kind === 'diff' ? diffKey(t.path, t.rev) : t.key)
-// rev "cmp:<branch>": o arquivo entre a branch atual e outra (comparar branches).
-const diffKey = (path: string, rev?: string) => 'diff:' + (rev ? (rev.startsWith('cmp:') ? rev : rev.slice(0, 7)) + ':' : '') + path
+// rev "cmp:<branch>": o arquivo entre a branch atual e outra (comparar branches); "mr:<iid>:<base>:<head>": num merge request.
+const diffKey = (path: string, rev?: string) => 'diff:' + (rev ? (rev.startsWith('cmp:') || rev.startsWith('mr:') ? rev : rev.slice(0, 7)) + ':' : '') + path
 
 const inflight = new Map<string, Promise<boolean>>()
 

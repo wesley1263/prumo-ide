@@ -22,6 +22,7 @@ import (
 	"prumo/internal/debug"
 	"prumo/internal/events"
 	"prumo/internal/files"
+	"prumo/internal/forge"
 	"prumo/internal/gitx"
 	"prumo/internal/lsp"
 	"prumo/internal/run"
@@ -50,7 +51,8 @@ type Core struct {
 	Search  *search.Service
 	Terms   *term.Manager
 	Bridge  *bridge.Server
-	Agent   *agent.Runner // agente de IA para mensagens de commit
+	Agent   *agent.Runner   // agente de IA para mensagens de commit
+	Forge   *forge.Accounts // contas do GitLab (merge requests)
 	Dev     bool
 	// PickDir abre o seletor nativo de pasta. No modo dev não existe: a UI pede o caminho por texto.
 	PickDir func(title string) (string, error)
@@ -82,6 +84,7 @@ func (c *Core) Services() map[string]any {
 		"Tools":       &Tools{c},
 		"Files":       &Files{c},
 		"Git":         &Git{c},
+		"GitLab":      &GitLab{c},
 		"RunConfigs":  &RunConfigs{c},
 		"Runs":        &Runs{c},
 		"Debug":       &Debug{c},

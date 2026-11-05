@@ -21,6 +21,7 @@ import { DiffView } from './DiffView'
 import { MarkdownPreview, isMarkdown, useMarkdownView } from './MarkdownPreview'
 import tokens from '../../design/tokens.json'
 import { t, tn } from '../i18n'
+import { parseMrRev } from '../git/mergeRequests'
 
 /** Posição do cursor, para a status bar. */
 export const useCursor = create<{ line: number; col: number; selected: number }>(() => ({ line: 1, col: 1, selected: 0 }))
@@ -61,7 +62,7 @@ function Tabs() {
         const isActive = key === active
         const doc = tab.kind === 'file' ? docs[tab.key] : undefined
         const title = tab.kind === 'diff' ? (tab.path.split('/').pop() ?? tab.path) : (doc?.title ?? tab.key)
-        const suffix = tab.kind === 'diff' ? (tab.rev ? ` (${tab.rev.startsWith('cmp:') ? '↔ ' + tab.rev.slice(4) : tab.rev.slice(0, 7)})` : ' (diff)') : ''
+        const suffix = tab.kind === 'diff' ? (tab.rev ? ` (${tab.rev.startsWith('cmp:') ? '↔ ' + tab.rev.slice(4) : tab.rev.startsWith('mr:') ? '!' + parseMrRev(tab.rev).iid : tab.rev.slice(0, 7)})` : ' (diff)') : ''
         return (
           <div
             key={key}
@@ -69,7 +70,7 @@ function Tabs() {
             aria-label={title + suffix + (doc?.dirty ? t(', não salvo') : '')}
             aria-selected={isActive}
             tabIndex={isActive ? 0 : -1}
-            title={tab.kind === 'diff' ? (tab.rev ? (tab.rev.startsWith('cmp:') ? t('Diff: {path} entre a branch atual e {branch}', { path: tab.path, branch: tab.rev.slice(4) }) : t('Diff: {path} no commit {hash}', { path: tab.path, hash: tab.rev.slice(0, 7) })) : t('Diff: {path}', { path: tab.path })) : tab.key.replace(/^ext:/, '')}
+            title={tab.kind === 'diff' ? (tab.rev ? (tab.rev.startsWith('mr:') ? t('Diff: {path} no merge request !{iid}', { path: tab.path, iid: parseMrRev(tab.rev).iid }) : tab.rev.startsWith('cmp:') ? t('Diff: {path} entre a branch atual e {branch}', { path: tab.path, branch: tab.rev.slice(4) }) : t('Diff: {path} no commit {hash}', { path: tab.path, hash: tab.rev.slice(0, 7) })) : t('Diff: {path}', { path: tab.path })) : tab.key.replace(/^ext:/, '')}
             onClick={() => activate(key)}
             onAuxClick={(e) => e.button === 1 && close(key)}
             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && activate(key)}

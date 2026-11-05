@@ -57,6 +57,10 @@ releases yet: [the installer](#install) builds it from source in one step.
 - Branches (favorites, compare with the current branch, worktrees), update, push, stash, tags
 - Log with a branch graph, filters and commit details; cherry-pick, revert, reset and interactive rebase from
   the log; blame in the gutter; a three-way merge tool for conflicts
+- GitLab merge requests (gitlab.com or self-hosted): list and filter them, read the description, CI status,
+  approvals and comments, open each file's diff, comment, check out the branch, and create one from the
+  current branch (pushing it first, with reviewers, draft and squash options, and an AI-written title and
+  description if you want). Sign in with a personal access token or reuse your `glab` login
 - Tabs are remembered per branch
 
 **Everything else**

@@ -1,11 +1,11 @@
 // S28 Configurações (Ctrl+Alt+S): páginas com busca, rascunho com Aplicar/OK/Cancelar e validação no campo.
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useDocs } from '../editor/docs'
 import { lang, resolveLang, storedPref, storePref, t, type LangPref } from '../i18n'
 import { Dialog as AriaDialog, Heading, Modal, ModalOverlay, Radio, RadioGroup } from 'react-aria-components'
 import { CheckCircle2, Search, XCircle } from 'lucide-react'
 import { create } from 'zustand'
-import { api, type GoSdk, type SdkDownload, type ToolsStatus } from '../lib/api'
+import { api, type GitLabAccount, type GoSdk, type SdkDownload, type ToolsStatus } from '../lib/api'
 import { allActions, comboFromEvent, keyLabel } from '../lib/keymap'
 import { useApp, type Theme } from '../state/app'
 import { DEFAULTS, savePrefs, usePrefs, type Prefs } from '../state/settings'
@@ -14,8 +14,10 @@ import { Banner, Dialog, ProgressBar, Spinner, toast } from '../design/feedback'
 import { cn } from '../design/cn'
 import { fold } from '../search/state'
 import { useAgents } from '../git/CommitAgent'
+import { useMergeRequests } from '../git/mergeRequests'
+import { openUrl } from '../lib/openUrl'
 
-type PageId = 'appearance' | 'editor' | 'keymap' | 'go' | 'tools' | 'terminal'
+type PageId = 'appearance' | 'editor' | 'keymap' | 'go' | 'tools' | 'vcs' | 'terminal'
 
 export const useSettingsUi = create<{ open: boolean; page: PageId }>(() => ({ open: false, page: 'appearance' }))
 export const openSettings = (page?: PageId) => useSettingsUi.setState((s) => ({ open: true, page: page ?? s.page }))
@@ -26,6 +28,7 @@ const PAGES: Array<{ id: PageId; title: string; keywords: string[] }> = [
   { id: 'keymap', title: t('Atalhos'), keywords: ['teclado', 'keymap', 'atalho'] },
   { id: 'go', title: 'Go', keywords: ['sdk', 'goroot', 'versão', 'go'] },
   { id: 'tools', title: t('Ferramentas'), keywords: ['gopls', 'delve', 'dlv', 'git', 'ripgrep', 'instalar', 'depurador', 'ia', 'ai', 'agente', 'claude', 'codex', 'gemini', 'commit'] },
+  { id: 'vcs', title: t('Controle de versão'), keywords: ['gitlab', 'merge request', 'token', 'conta', 'glab', 'git', 'pull request'] },
   { id: 'terminal', title: t('Terminal'), keywords: ['shell', 'bash', 'zsh', 'fish'] },
 ]
 
@@ -267,6 +270,7 @@ function Body({ close }: { close: () => void }) {
           {current?.id === 'keymap' && <KeymapPage q={q} />}
           {current?.id === 'go' && <GoPage q={q} />}
           {current?.id === 'tools' && <ToolsPage q={q} />}
+          {current?.id === 'vcs' && <GitLabAccounts q={q} />}
           {current?.id === 'terminal' && (
             <Field label="Shell" q={q} hint={t('Vazio usa o shell do sistema ($SHELL). Vale para terminais novos.')}>
               <input aria-label="Shell" value={draft.shell} onChange={(e) => set('shell', e.target.value)} placeholder={t('padrão do sistema')} spellCheck={false} className={cn(inputCls, 'w-[20rem] font-mono')} />
@@ -715,5 +719,113 @@ function OpenInField({ q }: { q: string }) {
         ))}
       </RadioGroup>
     </Field>
+  )
+}
+
+/** Contas do GitLab (merge requests): servidor e token de acesso pessoal. O token fica num arquivo só seu
+ * na pasta de dados da IDE e só vai para o servidor da própria conta. */
+function GitLabAccounts({ q }: { q: string }) {
+  const [list, setList] = useState<GitLabAccount[] | null>(null)
+  const [server, setServer] = useState('https://gitlab.com')
+  const [token, setToken] = useState('')
+  const [error, setError] = useState<string>()
+  const [busy, setBusy] = useState(false)
+  const tokenRef = useRef<HTMLInputElement>(null)
+  const load = () => api.GitLab.Accounts().then(setList, (e) => setError((e as Error).message))
+  useEffect(() => void load(), [])
+  const changed = () => {
+    void load()
+    void useMergeRequests.getState().loadContext()
+  }
+  const add = async () => {
+    setBusy(true)
+    setError(undefined)
+    try {
+      const acc = await api.GitLab.SaveAccount(server, token)
+      setToken('')
+      toast('success', t('Conta do GitLab conectada'), t('{user} em {server}', { user: '@' + acc.username, server: acc.server }))
+      changed()
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setBusy(false)
+      // O botão fica desligado durante o envio e o foco cairia fora do diálogo: volta para o campo.
+      setTimeout(() => tokenRef.current?.focus(), 0)
+    }
+  }
+  const remove = async (s: string) => {
+    try {
+      await api.GitLab.RemoveAccount(s)
+      changed()
+    } catch (e) {
+      setError((e as Error).message)
+    }
+  }
+  const tokenPage = (() => {
+    const base = server.trim().replace(/\/+$/, '')
+    return /^https?:\/\//.test(base) ? `${base}/-/user_settings/personal_access_tokens?name=Prumo&scopes=api` : ''
+  })()
+  return (
+    <section aria-label={t('Contas do GitLab')} className="flex flex-col gap-1">
+      <h4 className="text-sm font-semibold text-text">
+        <Hl text={t('Contas do GitLab')} q={q} />
+      </h4>
+      <p className="text-xs text-text-muted">
+        {t('A janela Merge requests usa a conta do servidor do remoto do projeto. Sem conta cadastrada, ela tenta o login do glab (o CLI do GitLab), se você tiver.')}
+      </p>
+      {!list ? (
+        <Spinner label={t('Carregando contas')} />
+      ) : list.length === 0 ? (
+        <p className="py-1 text-xs text-text-muted">{t('Nenhuma conta cadastrada.')}</p>
+      ) : (
+        <ul aria-label={t('Contas cadastradas')} className="flex flex-col">
+          {list.map((a) => (
+            <li key={a.server} className="flex items-center gap-2 border-t border-border py-1.5 first:border-t-0">
+              <CheckCircle2 className="size-icon-sm shrink-0 text-success" aria-hidden />
+              <span className="text-sm text-text">@{a.username}</span>
+              <span className="truncate font-mono text-xs text-text-muted">{a.server}</span>
+              <Button size="sm" className="ml-auto" onPress={() => void remove(a.server)}>
+                {t('Remover')}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <Field label={t('Servidor')} q={q}>
+        <input aria-label={t('Servidor do GitLab')} value={server} onChange={(e) => setServer(e.target.value)} spellCheck={false} className={cn(inputCls, 'font-mono')} />
+      </Field>
+      <Field
+        label={t('Token de acesso pessoal')}
+        q={q}
+        error={error}
+        hint={
+          <>
+            {t('Com o escopo api.')}{' '}
+            {tokenPage && (
+              <button type="button" className="text-accent-text underline underline-offset-2" onClick={() => openUrl(tokenPage)}>
+                {t('Criar um token no GitLab')}
+              </button>
+            )}
+          </>
+        }
+      >
+        <input
+          ref={tokenRef}
+          aria-label={t('Token de acesso pessoal')}
+          type="password"
+          autoComplete="off"
+          value={token}
+          onChange={(e) => setToken(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && token.trim() && void add()}
+          spellCheck={false}
+          className={cn(inputCls, 'font-mono')}
+        />
+      </Field>
+      <div>
+        <Button variant="primary" size="sm" loading={busy} isDisabled={!token.trim() || !server.trim()} onPress={() => void add()}>
+          {t('Conectar conta')}
+        </Button>
+      </div>
+    </section>
   )
 }

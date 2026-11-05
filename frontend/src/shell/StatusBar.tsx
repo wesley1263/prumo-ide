@@ -2,7 +2,7 @@
 import { AlertCircle, AlertTriangle, ChevronRight, GitBranch } from 'lucide-react'
 import { Button as AriaButton } from 'react-aria-components'
 import { useApp } from '../state/app'
-import { useDocs } from '../editor/docs'
+import { tabKeyOf, useDocs } from '../editor/docs'
 import { useCursor } from '../editor/EditorArea'
 import { useDiagnostics, useLsp } from '../editor/lsp/adapter'
 import { useLayout } from './layout'
@@ -19,12 +19,17 @@ export function StatusBar() {
   const sdk = useApp((s) => s.boot?.sdks.find((x) => x.isDefault))
   const active = useDocs((s) => s.active)
   const doc = useDocs((s) => (s.active ? s.docs[s.active] : undefined))
+  // Aba de diff: o caminho do arquivo (a chave tem a revisão na frente).
+  const diffPath = useDocs((s) => {
+    const tab = s.tabs.find((x) => x.kind === 'diff' && tabKeyOf(x) === s.active)
+    return tab?.kind === 'diff' ? tab.path : undefined
+  })
   const cursor = useCursor()
   const symbols = useSymbolPath()
   const counts = useDiagnostics((s) => s.counts)
   const lsp = useLsp()
 
-  const crumbs = doc ? doc.key.replace(/^ext:/, '').split('/') : active?.startsWith('diff:') ? [active.slice(5)] : []
+  const crumbs = doc ? doc.key.replace(/^ext:/, '').split('/') : diffPath ? diffPath.split('/') : active?.startsWith('diff:') ? [active.slice(5)] : []
   const lspText =
     !project.trusted ? t('Modo restrito')
     : lsp.state === 'ready' ? t('gopls pronto')

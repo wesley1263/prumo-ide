@@ -47,6 +47,9 @@ import { DebugPanel } from '../panels/DebugPanel'
 import { TestsPanel, installAutoRerun } from '../panels/TestsPanel'
 import { TerminalPanel } from '../panels/TerminalPanel'
 import { GitLogPanel, showFileHistory } from '../panels/GitLogPanel'
+import { MergeRequestsPanel } from '../panels/MergeRequestsPanel'
+import { CreateMergeRequestDialog } from '../git/CreateMergeRequest'
+import { useMergeRequests } from '../git/mergeRequests'
 import { installBlame, toggleBlame } from '../editor/blame'
 import { useDebug, isPaused, isDebugging } from '../state/debug'
 import { installDebugDecorations } from '../editor/breakpoints'
@@ -91,6 +94,8 @@ function panelFor(id: string, side: Side | 'float'): ReactNode {
       return <TerminalPanel />
     case 'git':
       return <GitLogPanel />
+    case 'mergeRequests':
+      return <MergeRequestsPanel />
     case 'find':
       return <UsagesPanel />
     case 'coverage':
@@ -328,6 +333,8 @@ export function AppShell() {
       },
       ...GO_TOOLS.map((g) => ({ id: 'go.' + g.id, title: g.title, run: () => void runGoTool(g.id).catch((e) => toast('danger', t('Não foi possível rodar {title}', { title: g.title }), String(e.message))) })),
       { id: 'vcs.stash', title: t('Guardar mudanças (stash)'), run: () => useStashUi.setState({ save: true }) },
+      { id: 'vcs.createMergeRequest', title: t('Criar merge request (GitLab)'), run: () => useMergeRequests.setState({ creating: true }) },
+      { id: 'vcs.mergeRequests', title: t('Merge requests (GitLab)'), run: () => L().show('mergeRequests') },
       { id: 'vcs.unstash', title: t('Recuperar stash'), run: () => useStashUi.setState({ restore: true }) },
       { id: 'editor.splitRight', title: t('Dividir à direita'), run: () => splitRight() },
       { id: 'editor.unsplit', title: t('Fechar a divisão'), run: () => closeSplit() },
@@ -509,6 +516,7 @@ export function AppShell() {
       <MnemonicDialog />
       <SafeDeleteDialog />
       <BranchCompareDialog />
+      <CreateMergeRequestDialog />
       <WorktreesDialog />
       <AddWorktreeDialog />
       <RebaseDialog />

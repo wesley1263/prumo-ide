@@ -14,6 +14,7 @@ import { Banner } from '../design/feedback'
 import { cn } from '../design/cn'
 import tokens from '../../design/tokens.json'
 import { t } from '../i18n'
+import { parseMrRev } from '../git/mergeRequests'
 
 // Modo escolhido vale para os próximos diffs.
 let sideBySide = true
@@ -80,7 +81,14 @@ export function DiffView({ projectId, path, rev, oldPath }: Props) {
     let stale = false
     const subs: monaco.IDisposable[] = []
     setError(null)
-    const load = rev?.startsWith('cmp:') ? api.Git.RefDiff(projectId, 'HEAD', rev.slice(4), path, oldPath) : rev ? api.Git.CommitDiff(projectId, rev, path, oldPath) : api.Git.Diff(projectId, path)
+    const mr = rev?.startsWith('mr:') ? parseMrRev(rev) : null
+    const load = mr
+      ? api.Git.RefDiff(projectId, mr.base, mr.head, path, oldPath)
+      : rev?.startsWith('cmp:')
+        ? api.Git.RefDiff(projectId, 'HEAD', rev.slice(4), path, oldPath)
+        : rev
+          ? api.Git.CommitDiff(projectId, rev, path, oldPath)
+          : api.Git.Diff(projectId, path)
     load.then(
       async (d) => {
         if (stale) return

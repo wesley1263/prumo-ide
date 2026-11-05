@@ -7,6 +7,7 @@ import { editor } from './en/editor.ts'
 import { panels } from './en/panels.ts'
 import { tools } from './en/tools.ts'
 import { backend } from './en/backend.ts'
+import { gitlab } from './en/gitlab.ts'
 
 export const en: Record<string, string> = {
   Idioma: 'Language',
@@ -17,5 +18,6 @@ export const en: Record<string, string> = {
   ...editor,
   ...panels,
   ...tools,
+  ...gitlab,
   ...backend,
 }

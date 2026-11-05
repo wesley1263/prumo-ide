@@ -13,6 +13,7 @@ import (
 	"prumo/internal/debug"
 	"prumo/internal/events"
 	"prumo/internal/files"
+	"prumo/internal/forge"
 	"prumo/internal/gitx"
 	"prumo/internal/lsp"
 	"prumo/internal/run"
@@ -110,6 +111,7 @@ func New(ctx context.Context, opt Options) (*api.Core, error) {
 		Git:     gitx.New(reg, bus, find("git")),
 		Sdks:    sdk.New(db, finder),
 		Agent:   agent.NewRunner(),
+		Forge:   forge.NewAccounts(opt.DataDir, find("glab")),
 		Dev:     opt.Dev,
 
 		InitialProject: opt.InitialProject,

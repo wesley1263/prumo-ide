@@ -155,3 +155,21 @@ func TestCleanCode(t *testing.T) {
 		}
 	}
 }
+
+func TestMergeRequestPromptAndSplit(t *testing.T) {
+	p := BuildMergeRequestPrompt(MergeRequestContext{
+		Source: "feat/x", Target: "main", Commits: []string{"feat: a\n\ncorpo"}, Stat: " a.go | 2 +-", Diff: "diff --git a/a.go b/a.go\n", Template: "## O quê\n\n## Por quê",
+	}, "auto", "pt-BR", "cite a tarefa")
+	for _, want := range []string{"title on the first line", "Brazilian Portuguese", "Source branch: feat/x", "Target branch: main", "feat: a\n\ncorpo", "## Por quê", "keeping its headings", "cite a tarefa", "diff --git"} {
+		if !strings.Contains(p, want) {
+			t.Errorf("prompt sem %q", want)
+		}
+	}
+	title, desc := SplitTitle("# Title: feat: adiciona X\n\n## Resumo\n- um\n")
+	if title != "feat: adiciona X" || desc != "## Resumo\n- um" {
+		t.Fatalf("split: %q %q", title, desc)
+	}
+	if got := CleanMarkdown("```markdown\nfeat: x\n\n- a\n```"); got != "feat: x\n\n- a" {
+		t.Fatalf("clean: %q", got)
+	}
+}
