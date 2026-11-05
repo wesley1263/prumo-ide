@@ -50,22 +50,29 @@ export class Fixture {
   }
 }
 
+/** Páginas cujo teste já acabou: o que a desmontagem provoca não conta como erro do produto. */
+const teardown = new WeakSet<Page>()
+
 export const test = base.extend<{ guard: void; fx: Fixture }>({
   // Todo teste falha com erro no console, erro de página ou resposta 5xx.
   guard: [
     async ({ page }, use) => {
       const problems: string[] = []
-      page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`))
-      page.on('console', (m) => m.type() === 'error' && problems.push(`console: ${m.text()}`))
-      page.on('response', (r) => r.status() >= 500 && problems.push(`${r.status()} ${r.url()}`))
+      const note = (s: string) => !teardown.has(page) && problems.push(s)
+      page.on('pageerror', (e) => note(`pageerror: ${e.stack ?? e.message}`)) // o stack diz de onde veio
+      page.on('console', (m) => m.type() === 'error' && note(`console: ${m.text()}`))
+      page.on('response', (r) => r.status() >= 500 && note(`${r.status()} ${r.url()}`))
       await use()
       expect(problems, 'erros no console ou respostas 5xx').toEqual([])
     },
     { auto: true },
   ],
-  fx: async ({}, use) => {
+  fx: async ({ page }, use) => {
     const base = mkdtempSync(join(tmpdir(), 'prumo-e2e-'))
     await use(new Fixture(base))
+    // Daqui para baixo é desmontagem: fechar o projeto por baixo de uma página viva derruba as chamadas
+    // em voo com "projeto não está aberto", e isso é artefato do teste, não erro do produto.
+    teardown.add(page)
     await closeProjectsUnder(base)
     rmSync(base, { recursive: true, force: true })
   },
@@ -97,9 +104,11 @@ export async function openProject(page: Page, dir: string, opts: { trust?: boole
   const dlg = page.getByRole('dialog', { name: 'Confiar neste projeto?' })
   await dlg.waitFor()
   await dlg.getByRole('button', { name: trust ? 'Confiar' : 'Modo restrito' }).click()
-  await expect(dlg).toBeHidden()
-  await expect(page.getByRole('tree', { name: 'Arquivos do projeto' })).toBeVisible()
-  if (trust) await expect(page.getByText('gopls pronto')).toBeVisible({ timeout: 60_000 })
+  // Abrir o projeto é trabalho de backend (indexar, git, gopls) e os workers disputam a máquina:
+  // os prazos aqui são folgados de propósito, senão a suíte fica instável sob carga.
+  await expect(dlg).toBeHidden({ timeout: 60_000 })
+  await expect(page.getByRole('tree', { name: 'Arquivos do projeto' })).toBeVisible({ timeout: 60_000 })
+  if (trust) await expect(page.getByText('gopls pronto')).toBeVisible({ timeout: 90_000 })
 }
 
 /** Abre um arquivo pela árvore, expandindo as pastas do caminho. Um .md abre no texto, salvo com `preview: true`. */
@@ -139,6 +148,7 @@ export async function cursorAt(page: Page, text: string, where: 'after' | 'befor
 
 /** Varredura de acessibilidade (WCAG 2 A/AA). O Monaco é de terceiros e fica de fora, registrado à parte no plano. */
 export async function a11y(page: Page) {
+  await expect(page.locator('#splash')).toHaveCount(0) // a tela de abertura sai em fade: no meio dele o contraste medido é falso
   const res = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).exclude('.monaco-editor').exclude('.monaco-diff-editor').analyze()
   return res.violations.map((v) => `${v.id} (${v.impact}): ${v.nodes.length}x ${v.help} → ${v.nodes[0]?.target.join(' ')}`)
 }

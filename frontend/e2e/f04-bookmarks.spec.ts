@@ -5,6 +5,17 @@ import type { Page } from '@playwright/test'
 const list = (page: Page) => page.getByRole('listbox', { name: 'Bookmarks do projeto' })
 const cursorLine = (page: Page) => page.evaluate(() => (window as any).__prumoEditor.getPosition().lineNumber as number)
 
+/** Os bookmarks de um POST /bridge/rpc de Workspace.Save; null se for outra chamada. */
+function savedBookmarks(body: string | null): unknown[] | null {
+  if (!body?.includes('Workspace.Save')) return null
+  try {
+    const { method, args } = JSON.parse(body) as { method: string; args: [string, { bookmarks?: unknown[] }] }
+    return method === 'Workspace.Save' ? (args[1]?.bookmarks ?? []) : null
+  } catch {
+    return null
+  }
+}
+
 test('F04-H9 bookmarks: marcar, mnemônico, pular, seguir a edição e reabrir', async ({ page, fx }) => {
   const dir = fx.seed()
   await openProject(page, dir)
@@ -54,10 +65,12 @@ test('F04-H9 bookmarks: marcar, mnemônico, pular, seguir a edição e reabrir',
   await expect.poll(() => cursorLine(page)).toBe(totalLine)
 
   // F11 de novo desmarca; reabrindo o projeto, o outro continua.
-  const saved = page.waitForResponse((r) => (r.request().postData() ?? '').includes('Workspace.Save'))
+  // Espera o Workspace.Save que já traz a marca removida: um save pendente de antes (debounce de 1 s)
+  // chegaria primeiro, ainda com os dois, e o reload perderia a remoção.
+  const saved = page.waitForResponse((r) => savedBookmarks(r.request().postData())?.length === 1)
   await page.keyboard.press('F11')
   await expect(page.locator('.prumo-bookmark')).toHaveCount(0)
-  await saved // o estado do projeto é gravado com 1 s de folga
+  await saved
   await page.reload()
   await page.getByRole('list', { name: 'Projetos recentes' }).getByRole('button', { name: new RegExp(dir.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')) }).click()
   // Espera a IDE montar (os atalhos só existem depois) antes do Shift+F11.
