@@ -21,6 +21,7 @@ export const panels: Record<string, string> = {
   'Escolher trechos de {path}': 'Choose hunks of {path}',
   'Incluir {path} ({kind})': 'Include {path} ({kind})',
   '{path} · {kind} · clique duplo para ver o diff': '{path} · {kind} · double-click to show the diff',
+  '{path} · pasta não versionada com muitos arquivos · para escondê-la, adicione ao .gitignore': '{path} · unversioned folder with many files · to hide it, add it to .gitignore',
   'Trechos de {path}': 'Hunks of {path}',
   'Incluir o trecho {n} de {path} ({hunk})': 'Include hunk {n} of {path} ({hunk})',
   'Fechar as linhas do trecho {n} de {path}': 'Close the lines of hunk {n} of {path}',

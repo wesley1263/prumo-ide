@@ -25,6 +25,24 @@ test.describe('F12 commit', () => {
     await expect(panel(page).getByText('Não versionados')).toBeVisible()
   })
 
+  test('F12-E8 pasta não versionada grande (cache fora do .gitignore) vira uma linha só e entra inteira no commit', async ({ page, fx }) => {
+    const dir = fx.seed()
+    for (let i = 0; i < 250; i++) fx.write(dir, `.cache/mod/m${i}/f.go`, 'package m\n')
+    fx.write(dir, 'novo/a.go', 'package novo\n') // pasta pequena: arquivo por arquivo
+    await openProject(page, dir)
+    await openCommit(page)
+    const cache = panel(page).getByRole('checkbox', { name: /Incluir \.cache\/ / })
+    await expect(cache).not.toBeChecked()
+    await expect(panel(page).getByText('250 arquivos')).toBeVisible()
+    await expect(panel(page).getByRole('checkbox', { name: /Incluir novo\/a\.go/ })).toBeVisible()
+    await expect(panel(page).getByText('f.go')).toHaveCount(0)
+    await cache.check({ force: true })
+    await panel(page).getByLabel('Mensagem do commit').fill('cache')
+    await panel(page).getByRole('button', { name: 'Commit', exact: true }).click()
+    await expect(page.getByText(/Commit [0-9a-f]{7} criado/)).toBeVisible()
+    expect(fx.git(dir, 'ls-files', '.cache').split('\n')).toHaveLength(250)
+  })
+
   test('F12-E1 sem mensagem o botão Commit fica desligado', async ({ page, fx }) => {
     await openProject(page, fx.seed())
     await openCommit(page)

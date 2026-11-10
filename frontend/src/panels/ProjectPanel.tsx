@@ -88,22 +88,24 @@ export function ProjectPanel() {
     const byPath = new Map<string, ChangeKind>()
     const dirty = new Set<string>()
     for (const f of git?.files ?? []) {
-      byPath.set(f.path, f.kind)
-      const parts = f.path.split('/')
+      const path = f.path.replace(/\/$/, '') // pasta não versionada recolhida: a pasta e tudo dentro dela
+      byPath.set(path, f.kind)
+      const parts = path.split('/')
       for (let i = 1; i < parts.length; i++) dirty.add(parts.slice(0, i).join('/'))
     }
     return { byPath, dirty }
   }, [git])
 
-  const toNode = (n: FileNode): TreeNode => {
-    const kind = byPath.get(n.path)
+  // inherited: dentro de uma pasta não versionada, tudo é não versionado.
+  const toNode = (n: FileNode, inherited?: ChangeKind): TreeNode => {
+    const kind = byPath.get(n.path) ?? inherited
     return {
       id: n.path,
       label: n.name,
       textValue: n.name,
       isLeaf: !n.isDir,
       icon: n.isDir ? <Folder className="size-icon text-text-muted" aria-hidden /> : fileIcon(n.name),
-      children: n.isDir ? children[n.path]?.map(toNode) : undefined,
+      children: n.isDir ? children[n.path]?.map((c) => toNode(c, kind === 'untracked' ? kind : undefined)) : undefined,
       className: kind ? statusClass[kind] : n.isDir && dirty.has(n.path) ? 'text-vcs-modified' : undefined,
     }
   }
@@ -114,7 +116,7 @@ export function ProjectPanel() {
     secondary: homeRelative(project.rootPath),
     isLeaf: false,
     icon: <Folder className="size-icon text-accent-text" aria-hidden />,
-    children: children['']?.map(toNode),
+    children: children['']?.map((c) => toNode(c)),
   }
 
   const onToggle = (node: TreeNode, isOpen: boolean) => {

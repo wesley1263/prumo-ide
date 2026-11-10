@@ -215,8 +215,10 @@ export function CommitPanel() {
           )}
         </div>
         {list.map((f) => {
-          const name = f.path.split('/').pop()!
+          const folder = f.path.endsWith('/') // pasta não versionada grande, recolhida
+          const name = folder ? f.path.slice(0, -1).split('/').pop()! + '/' : f.path.split('/').pop()!
           const dir = f.path.slice(0, -name.length - 1)
+          const diff = () => !folder && openDiff(f.path)
           return (
             <div key={f.path}>
             <div className={cn('flex h-row items-center gap-2 pl-3 pr-3', focused === f.path ? 'bg-selection-inactive' : 'hover:bg-hover')}>
@@ -242,9 +244,13 @@ export function CommitPanel() {
               <span
                 role="button"
                 tabIndex={0}
-                title={t('{path} · {kind} · clique duplo para ver o diff', { path: f.path, kind: kindLabel[f.kind] })}
+                title={
+                  folder
+                    ? t('{path} · pasta não versionada com muitos arquivos · para escondê-la, adicione ao .gitignore', { path: f.path })
+                    : t('{path} · {kind} · clique duplo para ver o diff', { path: f.path, kind: kindLabel[f.kind] })
+                }
                 onClick={() => setFocused(f.path)}
-                onDoubleClick={() => openDiff(f.path)}
+                onDoubleClick={diff}
                 onContextMenu={(e) => {
                   e.preventDefault()
                   setClMenu({ x: e.clientX, y: e.clientY, path: f.path })
@@ -259,7 +265,7 @@ export function CommitPanel() {
                   }
                   if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd')) {
                     e.preventDefault()
-                    openDiff(f.path)
+                    diff()
                   }
                 }}
                 onFocus={() => setFocused(f.path)}
@@ -267,6 +273,7 @@ export function CommitPanel() {
               >
                 <span className={cn('truncate text-sm', kindClass[f.kind])}>{name}</span>
                 {dir && <span className="truncate text-xs text-text-muted">{dir}</span>}
+                {folder && <span className="shrink-0 text-xs text-text-muted">{tn(f.count ?? 0, '{n} arquivo', '{n} arquivos')}</span>}
               </span>
             </div>
             {chunks[f.path] && (

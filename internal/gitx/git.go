@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -120,7 +121,13 @@ type FileChange struct {
 	Kind     string `json:"kind"`     // added | modified | deleted | renamed | untracked | conflict
 	Staged   bool   `json:"staged"`
 	Unstaged bool   `json:"unstaged"`
+	// Count: pasta não versionada recolhida (Path termina em "/"): quantos arquivos ela tem.
+	Count int `json:"count,omitempty"`
 }
+
+// UntrackedDirMax: pasta não versionada com mais arquivos que isso vira uma entrada só. Um cache de módulos ou
+// um build fora do .gitignore tem dezenas de milhares de arquivos, e listar um por um trava a UI.
+const UntrackedDirMax = 200
 
 // RepoStatus é o estado do repositório do projeto.
 type RepoStatus struct {
@@ -148,12 +155,21 @@ func (g *Git) Status(projectID string) (RepoStatus, error) {
 	if err != nil {
 		return RepoStatus{}, err
 	}
-	out, err := g.run(ctx, top, true, "status", "--porcelain=v2", "-z", "--branch", "--untracked-files=all")
+	// "normal": uma pasta inteira não versionada vem como "pasta/", sem o git listar o que tem dentro.
+	out, err := g.run(ctx, top, true, "status", "--porcelain=v2", "-z", "--branch", "--untracked-files=normal")
 	if err != nil {
 		return RepoStatus{}, err
 	}
 	st, err := ParseStatus(out)
 	if err != nil {
+		return RepoStatus{}, err
+	}
+	root := o.RootPath
+	if real, err := filepath.EvalSymlinks(root); err == nil {
+		root = real
+	}
+	base, _ := filepath.Rel(top, root)
+	if st.Files, err = g.expandUntracked(ctx, top, filepath.ToSlash(base), st.Files); err != nil {
 		return RepoStatus{}, err
 	}
 	st.Operation = g.operation(ctx, top)
@@ -163,6 +179,9 @@ func (g *Git) Status(projectID string) (RepoStatus, error) {
 		rel, err := o.Rel(filepath.Join(top, filepath.FromSlash(f.Path)))
 		if err != nil || rel == "" {
 			continue
+		}
+		if strings.HasSuffix(f.Path, "/") {
+			rel += "/"
 		}
 		f.Path = rel
 		if f.OrigPath != "" {
@@ -174,6 +193,51 @@ func (g *Git) Status(projectID string) (RepoStatus, error) {
 	}
 	st.Files = files
 	return st, nil
+}
+
+// expandUntracked troca cada pasta não versionada ("pasta/") pelos arquivos dela, menos as grandes (mais de
+// UntrackedDirMax arquivos), que ficam como uma entrada só com a contagem. Uma pasta que contém o projeto (base,
+// relativo ao topo do repositório) é sempre aberta: recolhida, ela ficaria fora do projeto e sumiria da lista.
+func (g *Git) expandUntracked(ctx context.Context, top, base string, files []FileChange) ([]FileChange, error) {
+	inside := map[string][]string{}
+	var specs []string
+	for _, f := range files {
+		if f.Kind == "untracked" && strings.HasSuffix(f.Path, "/") {
+			inside[f.Path] = nil
+			specs = append(specs, ":(literal)"+f.Path)
+		}
+	}
+	if len(specs) == 0 {
+		return files, nil
+	}
+	out, err := g.run(ctx, top, true, append([]string{"ls-files", "-z", "--others", "--exclude-standard", "--"}, specs...)...)
+	if err != nil {
+		return nil, err
+	}
+	for _, p := range strings.Split(string(out), "\x00") {
+		for d := path.Dir(p); p != "" && d != "." && d != "/"; d = path.Dir(d) {
+			if list, ok := inside[d+"/"]; ok {
+				inside[d+"/"] = append(list, p)
+				break
+			}
+		}
+	}
+	res := make([]FileChange, 0, len(files))
+	for _, f := range files {
+		list, isDir := inside[f.Path]
+		switch {
+		case !isDir:
+			res = append(res, f)
+		case len(list) > UntrackedDirMax && !strings.HasPrefix(base+"/", f.Path):
+			f.Count = len(list)
+			res = append(res, f)
+		default:
+			for _, p := range list {
+				res = append(res, FileChange{Path: p, Kind: "untracked", Unstaged: true})
+			}
+		}
+	}
+	return res, nil
 }
 
 func (g *Git) operation(ctx context.Context, top string) string {
