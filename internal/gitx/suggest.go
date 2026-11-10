@@ -79,6 +79,9 @@ func (g *Git) SuggestContext(projectID string, files []string, partial map[strin
 			letter = "M"
 		}
 		out.Files = append(out.Files, letter+" "+p)
+		if strings.HasSuffix(p, "/") {
+			continue // pasta não versionada recolhida: o nome basta, o conteúdo não cabe
+		}
 
 		var d string
 		switch content, isPartial := partial[p]; {

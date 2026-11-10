@@ -2,9 +2,11 @@ package gitx
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -165,5 +167,63 @@ func TestCommitPartial(t *testing.T) {
 	}
 	if st := gitIn(t, f.me, "status", "--porcelain"); st != "M a.txt" {
 		t.Fatalf("status: %q", st)
+	}
+}
+
+// Pasta não versionada grande (um cache de módulos fora do .gitignore) vira uma entrada só; pasta pequena
+// continua arquivo por arquivo. O projeto é uma subpasta do repositório, como num monorepo.
+func TestStatusCollapsesLargeUntrackedDirs(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git ausente")
+	}
+	ctx := context.Background()
+	repo := t.TempDir()
+	if real, err := filepath.EvalSymlinks(repo); err == nil {
+		repo = real
+	}
+	put := func(dir, name, content string) {
+		os.MkdirAll(filepath.Dir(filepath.Join(dir, name)), 0o755)
+		write(t, dir, name, content)
+	}
+	gitIn(t, repo, "init", "-q", "-b", "main")
+	root := filepath.Join(repo, "apps", "api")
+	put(root, "go.mod", "module api\n")
+	put(repo, ".gitignore", "*.log\n")
+	gitIn(t, repo, "add", "-A")
+	gitIn(t, repo, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "base")
+	for i := range UntrackedDirMax + 50 {
+		put(root, fmt.Sprintf(".cache/mod/m%d/f.go", i), "package m\n")
+	}
+	put(root, ".cache/build.log", "ignorado\n")
+	put(root, "novo/a.go", "package novo\n")
+	put(root, "novo/sub/b.go", "package sub\n")
+
+	db, _ := store.Open(ctx, filepath.Join(t.TempDir(), "s.db"))
+	defer db.Close()
+	p, _ := db.TouchProject(ctx, root, "api")
+	reg := workspace.NewRegistry(db)
+	reg.Add(ctx, p)
+	reg.SetTrusted(p.ID, true)
+	g := New(reg, events.NewBus(), func() string { p, _ := exec.LookPath("git"); return p })
+
+	st, err := g.Status(p.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := []FileChange{
+		{Path: ".cache/", Kind: "untracked", Unstaged: true, Count: UntrackedDirMax + 50},
+		{Path: "novo/a.go", Kind: "untracked", Unstaged: true},
+		{Path: "novo/sub/b.go", Kind: "untracked", Unstaged: true},
+	}
+	if !reflect.DeepEqual(st.Files, want) {
+		t.Fatalf("arquivos:\n got %+v\nwant %+v", st.Files, want)
+	}
+
+	// A pasta recolhida entra inteira no commit (menos o ignorado).
+	if _, err := g.Commit(p.ID, CommitRequest{Files: []string{".cache/"}, Message: "cache"}); err != nil {
+		t.Fatal(err)
+	}
+	if n := len(strings.Fields(gitIn(t, repo, "ls-files", "apps/api/.cache"))); n != UntrackedDirMax+50 {
+		t.Fatalf("arquivos do cache no commit: %d", n)
 	}
 }

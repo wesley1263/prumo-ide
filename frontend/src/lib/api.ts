@@ -153,6 +153,8 @@ export interface FileChange {
   kind: ChangeKind
   staged: boolean
   unstaged: boolean
+  /** Pasta não versionada grande, recolhida numa entrada só (path termina em "/"): quantos arquivos tem. */
+  count?: number
 }
 export interface RepoStatus {
   isRepo: boolean
