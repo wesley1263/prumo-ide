@@ -2,7 +2,7 @@
 // trecho. Nesse caso o lado direito é o próprio arquivo aberto (editável): reverter é uma edição comum, que o
 // Ctrl+Z desfaz e o salvamento automático grava.
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, Columns2, FileCode2, Rows2, Undo2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Columns2, FileCode2, FileText, Rows2, Undo2 } from 'lucide-react'
 import { monaco } from './monaco'
 import { useDocs } from './docs'
 import { lineDiff, type Hunk } from './lineDiff'
@@ -15,6 +15,8 @@ import { cn } from '../design/cn'
 import tokens from '../../design/tokens.json'
 import { t } from '../i18n'
 import { parseMrRev } from '../git/mergeRequests'
+import { parsePrRev, usePullRequests } from '../git/pullRequests'
+import { useReviewThreads } from './reviewThreads'
 
 // Modo escolhido vale para os próximos diffs.
 let sideBySide = true
@@ -38,6 +40,11 @@ export function DiffView({ projectId, path, rev, oldPath }: Props) {
   const [binary, setBinary] = useState(false)
   const [editable, setEditable] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Muda a cada troca de modelos: as conversas de revisão se posicionam depois disso.
+  const [ready, setReady] = useState(0)
+  const pr = rev?.startsWith('pr:') ? parsePrRev(rev) : null
+  useReviewThreads(ready ? ed.current : null, pr?.number ?? null, path, split, ready)
+  const pending = usePullRequests((s) => (pr ? (s.drafts[pr.number] ?? []).length : 0))
 
   useEffect(() => {
     const e = monaco.editor.createDiffEditor(host.current!, {
@@ -81,7 +88,7 @@ export function DiffView({ projectId, path, rev, oldPath }: Props) {
     let stale = false
     const subs: monaco.IDisposable[] = []
     setError(null)
-    const mr = rev?.startsWith('mr:') ? parseMrRev(rev) : null
+    const mr = rev?.startsWith('mr:') ? parseMrRev(rev) : rev?.startsWith('pr:') ? parsePrRev(rev) : null
     const load = mr
       ? api.Git.RefDiff(projectId, mr.base, mr.head, path, oldPath)
       : rev?.startsWith('cmp:')
@@ -115,6 +122,7 @@ export function DiffView({ projectId, path, rev, oldPath }: Props) {
         e.getModifiedEditor().updateOptions({ readOnly: !canEdit })
         const recompute = () => setHunks(lineDiff(original.getLinesContent(), modified!.getLinesContent()) ?? [])
         recompute()
+        setReady((r) => r + 1)
         subs.push(modified.onDidChangeContent(recompute))
       },
       (err) => !stale && setError((err as Error).message),
@@ -179,6 +187,18 @@ export function DiffView({ projectId, path, rev, oldPath }: Props) {
         )}
         {!rev && (
           <IconButton label={t('Abrir no editor')} size="sm" icon={<FileCode2 className="size-icon-sm" />} onPress={openInEditor} />
+        )}
+        {pr && (
+          <Button
+            size="sm"
+            icon={<FileText className="size-icon-sm" />}
+            onPress={() => {
+              const d = usePullRequests.getState().details[pr.number]?.data
+              usePullRequests.getState().openOverview({ number: pr.number, title: d?.title ?? '' })
+            }}
+          >
+            {pending ? t('Revisão #{n} ({pending} pendentes)', { n: pr.number, pending }) : t('Visão geral #{n}', { n: pr.number })}
+          </Button>
         )}
         <div role="radiogroup" aria-label={t('Modo do diff')} className="ml-1 flex items-center rounded-md border border-border p-0.5">
           {(

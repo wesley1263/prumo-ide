@@ -15,6 +15,7 @@ import { cn } from '../design/cn'
 import { fold } from '../search/state'
 import { useAgents } from '../git/CommitAgent'
 import { useMergeRequests } from '../git/mergeRequests'
+import { usePullRequests } from '../git/pullRequests'
 import { openUrl } from '../lib/openUrl'
 
 type PageId = 'appearance' | 'editor' | 'keymap' | 'go' | 'tools' | 'vcs' | 'terminal'
@@ -28,7 +29,7 @@ const PAGES: Array<{ id: PageId; title: string; keywords: string[] }> = [
   { id: 'keymap', title: t('Atalhos'), keywords: ['teclado', 'keymap', 'atalho'] },
   { id: 'go', title: 'Go', keywords: ['sdk', 'goroot', 'versão', 'go'] },
   { id: 'tools', title: t('Ferramentas'), keywords: ['gopls', 'delve', 'dlv', 'git', 'ripgrep', 'instalar', 'depurador', 'ia', 'ai', 'agente', 'claude', 'codex', 'gemini', 'commit'] },
-  { id: 'vcs', title: t('Controle de versão'), keywords: ['gitlab', 'merge request', 'token', 'conta', 'glab', 'git', 'pull request'] },
+  { id: 'vcs', title: t('Controle de versão'), keywords: ['gitlab', 'github', 'merge request', 'pull request', 'token', 'conta', 'glab', 'gh', 'git'] },
   { id: 'terminal', title: t('Terminal'), keywords: ['shell', 'bash', 'zsh', 'fish'] },
 ]
 
@@ -270,7 +271,12 @@ function Body({ close }: { close: () => void }) {
           {current?.id === 'keymap' && <KeymapPage q={q} />}
           {current?.id === 'go' && <GoPage q={q} />}
           {current?.id === 'tools' && <ToolsPage q={q} />}
-          {current?.id === 'vcs' && <GitLabAccounts q={q} />}
+          {current?.id === 'vcs' && (
+            <div className="flex flex-col gap-6">
+              <ForgeAccounts q={q} kind="github" />
+              <ForgeAccounts q={q} kind="gitlab" />
+            </div>
+          )}
           {current?.id === 'terminal' && (
             <Field label="Shell" q={q} hint={t('Vazio usa o shell do sistema ($SHELL). Vale para terminais novos.')}>
               <input aria-label="Shell" value={draft.shell} onChange={(e) => set('shell', e.target.value)} placeholder={t('padrão do sistema')} spellCheck={false} className={cn(inputCls, 'w-[20rem] font-mono')} />
@@ -722,28 +728,31 @@ function OpenInField({ q }: { q: string }) {
   )
 }
 
-/** Contas do GitLab (merge requests): servidor e token de acesso pessoal. O token fica num arquivo só seu
- * na pasta de dados da IDE e só vai para o servidor da própria conta. */
-function GitLabAccounts({ q }: { q: string }) {
+/** Contas do GitLab (merge requests) ou do GitHub (pull requests): servidor e token de acesso pessoal. O token
+ * fica num arquivo só seu na pasta de dados da IDE e só vai para o servidor da própria conta. */
+function ForgeAccounts({ q, kind }: { q: string; kind: 'gitlab' | 'github' }) {
+  const gh = kind === 'github'
+  const svc = gh ? api.GitHub : api.GitLab
+  const title = gh ? t('Contas do GitHub') : t('Contas do GitLab')
   const [list, setList] = useState<GitLabAccount[] | null>(null)
-  const [server, setServer] = useState('https://gitlab.com')
+  const [server, setServer] = useState(gh ? 'https://github.com' : 'https://gitlab.com')
   const [token, setToken] = useState('')
   const [error, setError] = useState<string>()
   const [busy, setBusy] = useState(false)
   const tokenRef = useRef<HTMLInputElement>(null)
-  const load = () => api.GitLab.Accounts().then(setList, (e) => setError((e as Error).message))
+  const load = () => svc.Accounts().then(setList, (e) => setError((e as Error).message))
   useEffect(() => void load(), [])
   const changed = () => {
     void load()
-    void useMergeRequests.getState().loadContext()
+    void (gh ? usePullRequests : useMergeRequests).getState().loadContext()
   }
   const add = async () => {
     setBusy(true)
     setError(undefined)
     try {
-      const acc = await api.GitLab.SaveAccount(server, token)
+      const acc = await svc.SaveAccount(server, token)
       setToken('')
-      toast('success', t('Conta do GitLab conectada'), t('{user} em {server}', { user: '@' + acc.username, server: acc.server }))
+      toast('success', gh ? t('Conta do GitHub conectada') : t('Conta do GitLab conectada'), t('{user} em {server}', { user: '@' + acc.username, server: acc.server }))
       changed()
     } catch (e) {
       setError((e as Error).message)
@@ -755,7 +764,7 @@ function GitLabAccounts({ q }: { q: string }) {
   }
   const remove = async (s: string) => {
     try {
-      await api.GitLab.RemoveAccount(s)
+      await svc.RemoveAccount(s)
       changed()
     } catch (e) {
       setError((e as Error).message)
@@ -763,15 +772,19 @@ function GitLabAccounts({ q }: { q: string }) {
   }
   const tokenPage = (() => {
     const base = server.trim().replace(/\/+$/, '')
-    return /^https?:\/\//.test(base) ? `${base}/-/user_settings/personal_access_tokens?name=Prumo&scopes=api` : ''
+    if (!/^https?:\/\//.test(base)) return ''
+    // GitHub: token clássico com os escopos repo e read:org (o fino também serve, com acesso a pull requests).
+    return gh ? `${base}/settings/tokens/new?description=Prumo&scopes=repo,read:org` : `${base}/-/user_settings/personal_access_tokens?name=Prumo&scopes=api`
   })()
   return (
-    <section aria-label={t('Contas do GitLab')} className="flex flex-col gap-1">
+    <section aria-label={title} className="flex flex-col gap-1">
       <h4 className="text-sm font-semibold text-text">
-        <Hl text={t('Contas do GitLab')} q={q} />
+        <Hl text={title} q={q} />
       </h4>
       <p className="text-xs text-text-muted">
-        {t('A janela Merge requests usa a conta do servidor do remoto do projeto. Sem conta cadastrada, ela tenta o login do glab (o CLI do GitLab), se você tiver.')}
+        {gh
+          ? t('A janela Pull requests usa a conta do servidor do remoto do projeto. Sem conta cadastrada, ela tenta o login do gh (o CLI do GitHub), se você tiver.')
+          : t('A janela Merge requests usa a conta do servidor do remoto do projeto. Sem conta cadastrada, ela tenta o login do glab (o CLI do GitLab), se você tiver.')}
       </p>
       {!list ? (
         <Spinner label={t('Carregando contas')} />
@@ -792,7 +805,7 @@ function GitLabAccounts({ q }: { q: string }) {
         </ul>
       )}
       <Field label={t('Servidor')} q={q}>
-        <input aria-label={t('Servidor do GitLab')} value={server} onChange={(e) => setServer(e.target.value)} spellCheck={false} className={cn(inputCls, 'font-mono')} />
+        <input aria-label={gh ? t('Servidor do GitHub') : t('Servidor do GitLab')} value={server} onChange={(e) => setServer(e.target.value)} spellCheck={false} className={cn(inputCls, 'font-mono')} />
       </Field>
       <Field
         label={t('Token de acesso pessoal')}
@@ -800,10 +813,10 @@ function GitLabAccounts({ q }: { q: string }) {
         error={error}
         hint={
           <>
-            {t('Com o escopo api.')}{' '}
+            {gh ? t('Com os escopos repo e read:org.') : t('Com o escopo api.')}{' '}
             {tokenPage && (
               <button type="button" className="text-accent-text underline underline-offset-2" onClick={() => openUrl(tokenPage)}>
-                {t('Criar um token no GitLab')}
+                {gh ? t('Criar um token no GitHub') : t('Criar um token no GitLab')}
               </button>
             )}
           </>

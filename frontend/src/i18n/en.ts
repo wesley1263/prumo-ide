@@ -8,6 +8,7 @@ import { panels } from './en/panels.ts'
 import { tools } from './en/tools.ts'
 import { backend } from './en/backend.ts'
 import { gitlab } from './en/gitlab.ts'
+import { github } from './en/github.ts'
 
 export const en: Record<string, string> = {
   Idioma: 'Language',
@@ -19,5 +20,6 @@ export const en: Record<string, string> = {
   ...panels,
   ...tools,
   ...gitlab,
+  ...github,
   ...backend,
 }

@@ -1,7 +1,7 @@
 // Área central: abas, editor Monaco (um só, troca de modelo por aba), diff e estados vazios.
 import { useEffect, useRef, useState } from 'react'
 import { create } from 'zustand'
-import { Bug, Eye, FileCode2, FileDiff, Play, Undo2, X, Columns2, ShieldCheck } from 'lucide-react'
+import { Bug, Eye, FileCode2, FileDiff, GitPullRequest, Play, Undo2, X, Columns2, ShieldCheck } from 'lucide-react'
 import { hunkAt, revertHunk, type Hunk } from './vcsGutter'
 import { ContextMenu } from '../design/ContextMenu'
 import { useDebug } from '../state/debug'
@@ -22,6 +22,8 @@ import { MarkdownPreview, isMarkdown, useMarkdownView } from './MarkdownPreview'
 import tokens from '../../design/tokens.json'
 import { t, tn } from '../i18n'
 import { parseMrRev } from '../git/mergeRequests'
+import { parsePrRev } from '../git/pullRequests'
+import { PullRequestView } from './PullRequestView'
 
 /** Posição do cursor, para a status bar. */
 export const useCursor = create<{ line: number; col: number; selected: number }>(() => ({ line: 1, col: 1, selected: 0 }))
@@ -49,6 +51,25 @@ export const editorSelectionText = () => {
 
 const viewStates = new Map<string, monaco.editor.ICodeEditorViewState | null>()
 
+/** Nome, sufixo e dica de uma aba (arquivo, diff de commit, de comparação, de merge request ou de pull request). */
+function tabLabel(tab: Tab, docTitle?: string): { title: string; suffix: string; tooltip: string } {
+  if (tab.kind === 'pr') return { title: `#${tab.number} ${tab.title}`, suffix: '', tooltip: t('Pull request #{n}: {title}', { n: tab.number, title: tab.title }) }
+  if (tab.kind === 'file') return { title: docTitle ?? tab.key, suffix: '', tooltip: tab.key.replace(/^ext:/, '') }
+  const title = tab.path.split('/').pop() ?? tab.path
+  const rev = tab.rev
+  if (!rev) return { title, suffix: ' (diff)', tooltip: t('Diff: {path}', { path: tab.path }) }
+  if (rev.startsWith('cmp:')) return { title, suffix: ` (↔ ${rev.slice(4)})`, tooltip: t('Diff: {path} entre a branch atual e {branch}', { path: tab.path, branch: rev.slice(4) }) }
+  if (rev.startsWith('mr:')) {
+    const iid = parseMrRev(rev).iid
+    return { title, suffix: ` (!${iid})`, tooltip: t('Diff: {path} no merge request !{iid}', { path: tab.path, iid }) }
+  }
+  if (rev.startsWith('pr:')) {
+    const n = parsePrRev(rev).number
+    return { title, suffix: ` (#${n})`, tooltip: t('Diff: {path} no pull request #{n}', { path: tab.path, n }) }
+  }
+  return { title, suffix: ` (${rev.slice(0, 7)})`, tooltip: t('Diff: {path} no commit {hash}', { path: tab.path, hash: rev.slice(0, 7) }) }
+}
+
 function Tabs() {
   const { tabs, active, docs, activate, close } = useDocs()
   const activeIsFile = !!active && !active.startsWith('diff:')
@@ -61,8 +82,7 @@ function Tabs() {
         const key = tabKeyOf(tab)
         const isActive = key === active
         const doc = tab.kind === 'file' ? docs[tab.key] : undefined
-        const title = tab.kind === 'diff' ? (tab.path.split('/').pop() ?? tab.path) : (doc?.title ?? tab.key)
-        const suffix = tab.kind === 'diff' ? (tab.rev ? ` (${tab.rev.startsWith('cmp:') ? '↔ ' + tab.rev.slice(4) : tab.rev.startsWith('mr:') ? '!' + parseMrRev(tab.rev).iid : tab.rev.slice(0, 7)})` : ' (diff)') : ''
+        const { title, suffix, tooltip } = tabLabel(tab, doc?.title)
         return (
           <div
             key={key}
@@ -70,7 +90,7 @@ function Tabs() {
             aria-label={title + suffix + (doc?.dirty ? t(', não salvo') : '')}
             aria-selected={isActive}
             tabIndex={isActive ? 0 : -1}
-            title={tab.kind === 'diff' ? (tab.rev ? (tab.rev.startsWith('mr:') ? t('Diff: {path} no merge request !{iid}', { path: tab.path, iid: parseMrRev(tab.rev).iid }) : tab.rev.startsWith('cmp:') ? t('Diff: {path} entre a branch atual e {branch}', { path: tab.path, branch: tab.rev.slice(4) }) : t('Diff: {path} no commit {hash}', { path: tab.path, hash: tab.rev.slice(0, 7) })) : t('Diff: {path}', { path: tab.path })) : tab.key.replace(/^ext:/, '')}
+            title={tooltip}
             onClick={() => activate(key)}
             onAuxClick={(e) => e.button === 1 && close(key)}
             onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && activate(key)}
@@ -80,7 +100,13 @@ function Tabs() {
               'focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-focus',
             )}
           >
-            {tab.kind === 'diff' ? <FileDiff className="size-icon-sm shrink-0 text-vcs-modified" /> : <FileCode2 className="size-icon-sm shrink-0 text-accent-text" />}
+            {tab.kind === 'diff' ? (
+              <FileDiff className="size-icon-sm shrink-0 text-vcs-modified" />
+            ) : tab.kind === 'pr' ? (
+              <GitPullRequest className="size-icon-sm shrink-0 text-success" />
+            ) : (
+              <FileCode2 className="size-icon-sm shrink-0 text-accent-text" />
+            )}
             <span className={cn('truncate', tab.kind === 'file' && tab.preview && 'italic')}>
               {title + suffix}
             </span>
@@ -387,6 +413,11 @@ export function EditorArea() {
         {activeTab?.kind === 'diff' && project && (
           <div className="absolute inset-0">
             <DiffView key={tabKeyOf(activeTab)} projectId={project.id} path={activeTab.path} rev={activeTab.rev} oldPath={activeTab.oldPath} />
+          </div>
+        )}
+        {activeTab?.kind === 'pr' && project && (
+          <div className="absolute inset-0">
+            <PullRequestView key={tabKeyOf(activeTab)} number={activeTab.number} />
           </div>
         )}
         {!activeTab && (

@@ -40,7 +40,7 @@ function translateResult(method: string, r: unknown): unknown {
   const o = r as Record<string, unknown>
   const tr = (k: string) => (typeof o[k] === 'string' ? { [k]: translateBackend(o[k] as string) } : {})
   if (method === 'RunConfigs.Validate') return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, typeof v === 'string' ? translateBackend(v) : v]))
-  if (method === 'GitLab.Context') return { ...o, ...tr('error') }
+  if (method === 'GitLab.Context' || method === 'GitHub.Context') return { ...o, ...tr('error') }
   if (method === 'Git.CloneStatus') return { ...o, ...tr('phase'), ...tr('error') }
   if (method === 'Sdks.Download' || method === 'Sdks.DownloadStatus') return { ...o, ...tr('error') }
   if (method.startsWith('Git.') && !Array.isArray(r)) return { ...o, ...tr('message') }
@@ -634,6 +634,144 @@ export interface GitLabAccount {
   username: string
 }
 
+// ---------------------------------------------------------------- GitHub (pull requests)
+
+export interface GhUser {
+  login: string
+  avatarUrl: string
+  htmlUrl: string
+}
+
+export interface GhRepo {
+  fullName: string
+  htmlUrl: string
+  defaultBranch: string
+  canPush: boolean
+}
+
+export interface PullRequest {
+  number: number
+  title: string
+  state: 'open' | 'closed' | 'merged'
+  draft: boolean
+  author: GhUser
+  head: string
+  base: string
+  htmlUrl: string
+  createdAt: string
+  updatedAt: string
+  comments: number
+  labels: string[]
+}
+
+export interface GitHubContext {
+  remote: string
+  remoteUrl: string
+  host: string
+  path: string
+  isGitHub: boolean
+  server: string
+  authSource: '' | 'account' | 'gh' | 'env'
+  user: GhUser | null
+  repo: GhRepo | null
+  currentBranch: string
+  currentPull: PullRequest | null
+  template: string
+  error: string
+}
+
+export interface CheckRun {
+  name: string
+  status: 'queued' | 'in_progress' | 'completed' | string
+  conclusion: string
+  url: string
+}
+
+export interface PrChecks {
+  state: '' | 'success' | 'failure' | 'pending'
+  passed: number
+  failed: number
+  pending: number
+  skipped: number
+  runs: CheckRun[]
+}
+
+export type ReviewVerdict = 'APPROVED' | 'CHANGES_REQUESTED' | 'COMMENTED' | 'DISMISSED' | 'REQUESTED'
+
+export interface TimelineItem {
+  kind: 'comment' | 'review'
+  id: number
+  author: GhUser
+  body: string
+  state: '' | ReviewVerdict
+  createdAt: string
+  htmlUrl: string
+}
+
+export interface ReviewComment {
+  id: number
+  inReplyTo: number
+  reviewId: number
+  /** Caminho no projeto ("" = fora do projeto, num monorepo). */
+  path: string
+  /** 0 = desatualizado: a linha não existe mais no diff atual. */
+  line: number
+  side: 'RIGHT' | 'LEFT'
+  startLine: number
+  originalLine: number
+  body: string
+  author: GhUser
+  createdAt: string
+  htmlUrl: string
+  diffHunk: string
+}
+
+export interface PullDetail extends PullRequest {
+  body: string
+  headSha: string
+  baseSha: string
+  headRepo: string
+  sameRepo: boolean
+  merged: boolean
+  mergedBy: GhUser | null
+  mergeable: boolean | null
+  mergeableState: string
+  additions: number
+  deletions: number
+  changedFiles: number
+  commits: number
+  assignees: GhUser[]
+  reviews: { user: GhUser; state: ReviewVerdict }[]
+  checks: PrChecks
+  timeline: TimelineItem[]
+  reviewComments: ReviewComment[]
+}
+
+export interface PullQuery {
+  category: 'review' | 'assigned' | 'mine' | 'all'
+  state?: 'open' | 'closed' | 'merged' | 'all'
+  search?: string
+}
+
+/** Comentário numa linha, ainda não enviado (revisão pendente). path é do projeto. */
+export interface DraftComment {
+  path: string
+  line: number
+  side: 'RIGHT' | 'LEFT'
+  body: string
+}
+
+export interface CreatePrRequest {
+  head: string
+  base: string
+  title: string
+  body: string
+  draft: boolean
+  reviewers: string[]
+  assignToMe: boolean
+  push: boolean
+}
+
 // ---------------------------------------------------------------- serviços
 
 export const api = {
@@ -755,6 +893,27 @@ export const api = {
     SuggestDescription: (projectId: string, target: string, uiLang: string) =>
       call<{ title: string; description: string; agent: string }>('GitLab.SuggestDescription', projectId, target, uiLang),
     CancelSuggest: (projectId: string) => call<void>('GitLab.CancelSuggest', projectId),
+  },
+  GitHub: {
+    Context: (projectId: string) => call<GitHubContext>('GitHub.Context', projectId),
+    List: (projectId: string, q: PullQuery) => call<PullRequest[]>('GitHub.List', projectId, q),
+    Get: (projectId: string, n: number) => call<PullDetail>('GitHub.Get', projectId, n),
+    Files: (projectId: string, n: number) => call<{ base: string; head: string; files: CommitFile[] }>('GitHub.Files', projectId, n),
+    PrepareCheckout: (projectId: string, n: number) => call<string>('GitHub.PrepareCheckout', projectId, n),
+    Create: (projectId: string, req: CreatePrRequest) => call<PullRequest>('GitHub.Create', projectId, req),
+    Comment: (projectId: string, n: number, body: string) => call<void>('GitHub.Comment', projectId, n, body),
+    Review: (projectId: string, n: number, commit: string, req: { event: 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT'; body: string; comments: DraftComment[] }) =>
+      call<void>('GitHub.Review', projectId, n, commit, req),
+    AddComment: (projectId: string, n: number, commit: string, d: DraftComment) => call<void>('GitHub.AddComment', projectId, n, commit, d),
+    Reply: (projectId: string, n: number, to: number, body: string) => call<void>('GitHub.Reply', projectId, n, to, body),
+    Merge: (projectId: string, n: number, method: 'merge' | 'squash' | 'rebase', sha: string) => call<void>('GitHub.Merge', projectId, n, method, sha),
+    Assignable: (projectId: string, query: string) => call<GhUser[]>('GitHub.Assignable', projectId, query),
+    Accounts: () => call<GitLabAccount[]>('GitHub.Accounts'),
+    SaveAccount: (server: string, token: string) => call<GitLabAccount>('GitHub.SaveAccount', server, token),
+    RemoveAccount: (server: string) => call<void>('GitHub.RemoveAccount', server),
+    SuggestDescription: (projectId: string, base: string, uiLang: string) =>
+      call<{ title: string; description: string; agent: string }>('GitHub.SuggestDescription', projectId, base, uiLang),
+    CancelSuggest: (projectId: string) => call<void>('GitHub.CancelSuggest', projectId),
   },
   RunConfigs: {
     List: (projectId: string) => call<RunConfig[]>('RunConfigs.List', projectId),

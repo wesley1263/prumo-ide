@@ -19,7 +19,11 @@ export interface Doc {
 }
 
 // Diff: sem rev compara o último commit com o disco; com rev, o arquivo antes e depois daquele commit.
-export type Tab = { kind: 'file'; key: string; preview: boolean } | { kind: 'diff'; key: string; path: string; rev?: string; oldPath?: string }
+export type Tab =
+  | { kind: 'file'; key: string; preview: boolean }
+  | { kind: 'diff'; key: string; path: string; rev?: string; oldPath?: string }
+  /** Visão geral de um pull request do GitHub (key "pr:<número>"), como a aba de descrição do VS Code. */
+  | { kind: 'pr'; key: string; number: number; title: string }
 
 interface ConflictInfo {
   key: string
@@ -40,6 +44,7 @@ interface DocsState {
   openUri: (uri: string, line?: number, col?: number) => Promise<boolean>
   ensureModel: (uri: string) => Promise<monaco.editor.ITextModel | null>
   openDiff: (path: string, commit?: { rev: string; oldPath?: string }) => Promise<void>
+  openPull: (number: number, title: string) => void
   close: (tabKey: string) => Promise<void>
   activate: (tabKey: string) => void
   pin: (key: string) => void
@@ -212,6 +217,14 @@ export const useDocs = create<DocsState>((set, get) => {
       if (!get().tabs.some((t) => tabKeyOf(t) === key)) {
         set({ tabs: [...get().tabs, { kind: 'diff', key, path, rev: commit?.rev, oldPath: commit?.oldPath }] })
       }
+      set({ active: key })
+    },
+
+    openPull: (number, title) => {
+      const key = `pr:${number}`
+      const tabs = get().tabs
+      if (!tabs.some((t) => tabKeyOf(t) === key)) set({ tabs: [...tabs, { kind: 'pr', key, number, title }] })
+      else set({ tabs: tabs.map((t) => (t.kind === 'pr' && t.key === key ? { ...t, title } : t)) })
       set({ active: key })
     },
 

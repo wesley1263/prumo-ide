@@ -50,6 +50,9 @@ import { GitLogPanel, showFileHistory } from '../panels/GitLogPanel'
 import { MergeRequestsPanel } from '../panels/MergeRequestsPanel'
 import { CreateMergeRequestDialog } from '../git/CreateMergeRequest'
 import { useMergeRequests } from '../git/mergeRequests'
+import { PullRequestsPanel } from '../panels/PullRequestsPanel'
+import { CreatePullRequestDialog } from '../git/CreatePullRequest'
+import { usePullRequests } from '../git/pullRequests'
 import { installBlame, toggleBlame } from '../editor/blame'
 import { useDebug, isPaused, isDebugging } from '../state/debug'
 import { installDebugDecorations } from '../editor/breakpoints'
@@ -96,6 +99,8 @@ function panelFor(id: string, side: Side | 'float'): ReactNode {
       return <GitLogPanel />
     case 'mergeRequests':
       return <MergeRequestsPanel />
+    case 'pullRequests':
+      return <PullRequestsPanel />
     case 'find':
       return <UsagesPanel />
     case 'coverage':
@@ -336,6 +341,8 @@ export function AppShell() {
       { id: 'vcs.stash', title: t('Guardar mudanças (stash)'), run: () => useStashUi.setState({ save: true }) },
       { id: 'vcs.createMergeRequest', title: t('Criar merge request (GitLab)'), run: () => useMergeRequests.setState({ creating: true }) },
       { id: 'vcs.mergeRequests', title: t('Merge requests (GitLab)'), run: () => L().show('mergeRequests') },
+      { id: 'vcs.createPullRequest', title: t('Criar pull request (GitHub)'), run: () => usePullRequests.setState({ creating: true }) },
+      { id: 'vcs.pullRequests', title: t('Pull requests (GitHub)'), run: () => L().show('pullRequests') },
       { id: 'vcs.unstash', title: t('Recuperar stash'), run: () => useStashUi.setState({ restore: true }) },
       { id: 'editor.splitRight', title: t('Dividir à direita'), run: () => splitRight() },
       { id: 'editor.unsplit', title: t('Fechar a divisão'), run: () => closeSplit() },
@@ -518,6 +525,7 @@ export function AppShell() {
       <SafeDeleteDialog />
       <BranchCompareDialog />
       <CreateMergeRequestDialog />
+      <CreatePullRequestDialog />
       <WorktreesDialog />
       <AddWorktreeDialog />
       <RebaseDialog />

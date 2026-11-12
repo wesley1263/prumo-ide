@@ -53,7 +53,9 @@ type Core struct {
 	Bridge  *bridge.Server
 	Agent   *agent.Runner   // agente de IA para mensagens de commit
 	Forge   *forge.Accounts // contas do GitLab (merge requests)
-	Dev     bool
+	// GitHubAccounts: contas do GitHub (pull requests).
+	GitHubAccounts *forge.Accounts
+	Dev            bool
 	// PickDir abre o seletor nativo de pasta. No modo dev não existe: a UI pede o caminho por texto.
 	PickDir func(title string) (string, error)
 	// QuitApp fecha o app de verdade (runtime.Quit). Nil no modo dev.
@@ -85,6 +87,7 @@ func (c *Core) Services() map[string]any {
 		"Files":       &Files{c},
 		"Git":         &Git{c},
 		"GitLab":      &GitLab{c},
+		"GitHub":      &GitHub{c},
 		"RunConfigs":  &RunConfigs{c},
 		"Runs":        &Runs{c},
 		"Debug":       &Debug{c},
