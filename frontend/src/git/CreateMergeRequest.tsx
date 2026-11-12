@@ -277,8 +277,21 @@ function Reviewers({ selected, onChange }: { selected: GlUser[]; onChange: (u: G
   )
 }
 
-/** ✨ O agente de IA escreve título e descrição a partir dos commits e do diff da branch. */
-function AgentButton({ target, onResult }: { target: string; onResult: (r: { title: string; description: string }) => void }) {
+type Suggest = (projectId: string, target: string, uiLang: string) => Promise<{ title: string; description: string; agent: string }>
+
+/** ✨ O agente de IA escreve título e descrição a partir dos commits e do diff da branch (merge request do
+ * GitLab ou pull request do GitHub: suggest e cancel dizem para qual). */
+export function AgentButton({
+  target,
+  onResult,
+  suggest = api.GitLab.SuggestDescription,
+  cancel = api.GitLab.CancelSuggest,
+}: {
+  target: string
+  onResult: (r: { title: string; description: string }) => void
+  suggest?: Suggest
+  cancel?: (projectId: string) => Promise<void>
+}) {
   const project = useApp((s) => s.project)!
   const agent = useResolvedAgent()
   const consent = usePrefs((s) => s['commit.agentConsent'])
@@ -289,7 +302,7 @@ function AgentButton({ target, onResult }: { target: string; onResult: (r: { tit
     setAsking(false)
     setBusy(true)
     try {
-      const r = await api.GitLab.SuggestDescription(project.id, target, lang)
+      const r = await suggest(project.id, target, lang)
       onResult(r)
       toast('success', t('Título e descrição escritos pelo {agent}', { agent: r.agent }), t('Revise antes de criar.'))
     } catch (e) {
@@ -303,7 +316,7 @@ function AgentButton({ target, onResult }: { target: string; onResult: (r: { tit
     return (
       <span className="flex h-control items-center gap-1" role="status" aria-label={t('{agent} está escrevendo a descrição', { agent: agent.name })}>
         <Spinner label={t('{agent} está escrevendo a descrição', { agent: agent.name })} />
-        <IconButton label={t('Cancelar a geração')} size="sm" icon={<X className="size-icon-sm" />} onPress={() => void api.GitLab.CancelSuggest(project.id)} />
+        <IconButton label={t('Cancelar a geração')} size="sm" icon={<X className="size-icon-sm" />} onPress={() => void cancel(project.id)} />
       </span>
     )
   const label = agent.usable ? t('Gerar título e descrição com {agent}', { agent: agent.name }) : t('Nenhum agente de IA encontrado (Configurações → Ferramentas)')

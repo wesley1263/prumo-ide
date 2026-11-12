@@ -112,7 +112,9 @@ func New(ctx context.Context, opt Options) (*api.Core, error) {
 		Sdks:    sdk.New(db, finder),
 		Agent:   agent.NewRunner(),
 		Forge:   forge.NewAccounts(opt.DataDir, find("glab")),
-		Dev:     opt.Dev,
+
+		GitHubAccounts: forge.NewGitHubAccounts(opt.DataDir, find("gh")),
+		Dev:            opt.Dev,
 
 		InitialProject: opt.InitialProject,
 	}

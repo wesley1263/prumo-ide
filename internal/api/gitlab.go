@@ -277,12 +277,18 @@ type MRSuggestion struct {
 // SuggestDescription pede ao agente de IA (o mesmo das mensagens de commit) o título e a descrição do merge
 // request da branch atual para target. Só roda quando o usuário clica; o diff vai para o provedor do agente.
 func (g *GitLab) SuggestDescription(projectID, target, uiLang string) (MRSuggestion, error) {
+	return suggestDescription(g.c, projectID, target, uiLang, g.template(projectID), projectID+":mr")
+}
+
+// suggestDescription é o título e a descrição (merge request ou pull request) escritos pelo agente de IA a
+// partir dos commits e do diff da branch atual contra target. key identifica a geração para cancelar.
+func suggestDescription(c *Core, projectID, target, uiLang, template, key string) (MRSuggestion, error) {
 	ctx := context.Background()
-	rm, err := g.c.Git.MainRemote(projectID)
+	rm, err := c.Git.MainRemote(projectID)
 	if err != nil {
 		return MRSuggestion{}, err
 	}
-	vals, _ := g.c.DB.GetSettings(ctx, []string{"commit.agent", "commit.agentCommand", "commit.agentLanguage", "commit.agentInstructions"})
+	vals, _ := c.DB.GetSettings(ctx, []string{"commit.agent", "commit.agentCommand", "commit.agentLanguage", "commit.agentInstructions"})
 	str := func(k, def string) string {
 		var v string
 		if raw, ok := vals[k]; ok && json.Unmarshal(raw, &v) == nil && v != "" {
@@ -295,18 +301,18 @@ func (g *GitLab) SuggestDescription(projectID, target, uiLang string) (MRSuggest
 		return MRSuggestion{}, err
 	}
 	ref := rm.Name + "/" + target
-	if !g.c.Git.HasCommit(projectID, ref) {
+	if !c.Git.HasCommit(projectID, ref) {
 		ref = target
 	}
-	s, err := g.c.Git.BranchSummary(projectID, ref)
+	s, err := c.Git.BranchSummary(projectID, ref)
 	if err != nil {
 		return MRSuggestion{}, err
 	}
-	src, _ := g.c.Git.CurrentBranch(projectID)
+	src, _ := c.Git.CurrentBranch(projectID)
 	prompt := agent.BuildMergeRequestPrompt(agent.MergeRequestContext{
-		Source: src, Target: target, Commits: s.Commits, Stat: s.Stat, Diff: s.Diff, Truncated: s.Truncated, Template: g.template(projectID),
+		Source: src, Target: target, Commits: s.Commits, Stat: s.Stat, Diff: s.Diff, Truncated: s.Truncated, Template: template,
 	}, str("commit.agentLanguage", "auto"), uiLang, str("commit.agentInstructions", ""))
-	reply, err := g.c.Agent.RunWith(projectID+":mr", cmd, prompt, agent.CleanMarkdown)
+	reply, err := c.Agent.RunWith(key, cmd, prompt, agent.CleanMarkdown)
 	if err != nil {
 		return MRSuggestion{}, err
 	}

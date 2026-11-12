@@ -62,6 +62,11 @@ releases yet: [the installer](#install) builds it from source in one step.
   current branch (pushing it first, with reviewers, draft and squash options, and an AI-written title and
   description if you want). Sign in with a personal access token or reuse your `glab` login
 - Tabs are remembered per branch
+- GitHub pull requests, laid out like VS Code: sections for reviews requested from you, assigned to you,
+  created by you and all open; an overview tab with checks, reviewers and the conversation; the diff with
+  review threads on the lines, replies and a pending review you submit as approve, request changes or
+  comment; merge, checkout and creating a pull request (also on GitHub Enterprise, with a token or your `gh` login)
+- GitLab merge requests: list, details with pipeline and approvals, diff, comments, checkout and create
 
 **Everything else**
 - Integrated terminal (PTY), Problems window, notifications, editable keymap, settings with search

@@ -88,11 +88,12 @@ const panel = (page: Page) => page.getByRole('region', { name: 'Merge requests' 
 
 async function addAccount(page: Page, server: string) {
   const dlg = page.getByRole('dialog', { name: 'Configurações' })
-  await expect(dlg.getByRole('region', { name: 'Contas do GitLab' })).toBeVisible()
-  await dlg.getByLabel('Servidor do GitLab').fill(server)
-  await dlg.getByLabel('Token de acesso pessoal').fill('segredo')
-  await dlg.getByRole('button', { name: 'Conectar conta' }).click()
-  await expect(dlg.getByRole('list', { name: 'Contas cadastradas' })).toContainText('@eu')
+  const sec = dlg.getByRole('region', { name: 'Contas do GitLab' })
+  await expect(sec).toBeVisible()
+  await sec.getByLabel('Servidor do GitLab').fill(server)
+  await sec.getByLabel('Token de acesso pessoal').fill('segredo')
+  await sec.getByRole('button', { name: 'Conectar conta' }).click()
+  await expect(sec.getByRole('list', { name: 'Contas cadastradas' })).toContainText('@eu')
   await page.keyboard.press('Escape')
   await expect(dlg).toBeHidden()
 }

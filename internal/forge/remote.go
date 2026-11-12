@@ -1,5 +1,5 @@
-// Package forge fala com o servidor onde o repositório mora (por enquanto, o GitLab): merge requests,
-// contas e a ligação entre o remoto do git e o projeto no servidor.
+// Package forge fala com o servidor onde o repositório mora (GitLab ou GitHub): merge requests, pull
+// requests, contas e a ligação entre o remoto do git e o projeto no servidor.
 //
 // O token nunca sai para outro servidor: ele é escolhido pelo host do remoto e só vai para a URL da
 // conta daquele host (ou para https://<host> quando vem do glab).
@@ -65,7 +65,7 @@ func (r Remote) HostKey() string {
 	return r.Host
 }
 
-// normServer limpa a URL do servidor digitada pelo usuário: esquema, sem barra no fim, sem /api/v4.
+// normServer limpa a URL do servidor digitada pelo usuário: esquema, sem barra no fim, sem /api/v4 nem /api/v3.
 func normServer(s string) (string, error) {
 	s = strings.TrimSpace(s)
 	if s == "" {
@@ -78,7 +78,7 @@ func normServer(s string) (string, error) {
 	if err != nil || u.Host == "" || (u.Scheme != "https" && u.Scheme != "http") || u.User != nil || u.RawQuery != "" {
 		return "", errInvalidServer
 	}
-	p := strings.TrimSuffix(strings.TrimRight(u.Path, "/"), "/api/v4")
+	p := strings.TrimSuffix(strings.TrimSuffix(strings.TrimRight(u.Path, "/"), "/api/v4"), "/api/v3")
 	return strings.ToLower(u.Scheme+"://"+u.Host) + strings.TrimRight(p, "/"), nil
 }
 
