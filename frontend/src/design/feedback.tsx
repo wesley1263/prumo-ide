@@ -287,6 +287,7 @@ export function TreeView({
   selected,
   onSelect,
   onActivate,
+  onContextMenu,
   loading,
 }: {
   label: string
@@ -296,6 +297,8 @@ export function TreeView({
   selected: string | null
   onSelect: (node: TreeNode) => void
   onActivate: (node: TreeNode) => void
+  /** Clique direito (ou tecla de menu / Shift+F10) numa linha; x e y em coordenadas da janela. */
+  onContextMenu?: (node: TreeNode, x: number, y: number) => void
   loading?: Set<string>
 }) {
   const flat: Array<{ node: TreeNode; level: number; parent: string | null }> = []
@@ -351,6 +354,14 @@ export function TreeView({
       case 'Enter':
         if (cur) onActivate(cur.node)
         break
+      case 'ContextMenu':
+      case 'F10':
+        if (e.key === 'F10' && !e.shiftKey) return
+        if (cur && onContextMenu) {
+          const r = rowRefs.current.get(cur.node.id)?.getBoundingClientRect()
+          onContextMenu(cur.node, (r?.left ?? 0) + 24, (r?.bottom ?? 0))
+        }
+        break
       default:
         if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
           const q = (search + e.key).toLowerCase()
@@ -395,6 +406,12 @@ export function TreeView({
               if (!node.isLeaf) onToggle(node, !isOpen)
             }}
             onDoubleClick={() => node.isLeaf && onActivate(node)}
+            onContextMenu={(e) => {
+              if (!onContextMenu) return
+              e.preventDefault()
+              onSelect(node)
+              onContextMenu(node, e.clientX, e.clientY)
+            }}
             className={cn(
               'flex h-row cursor-default items-center gap-1.5 whitespace-nowrap pr-3 text-sm outline-none',
               isSel ? 'bg-selection-inactive focus:bg-selection' : 'hover:bg-hover',

@@ -825,6 +825,10 @@ export const api = {
     ReadExternal: (projectId: string, absPath: string) => call<FileContent>('Files.ReadExternal', projectId, absPath),
     Write: (projectId: string, path: string, content: string, expectedMtime: number) =>
       call<WriteResult>('Files.Write', projectId, path, content, expectedMtime),
+    Create: (projectId: string, path: string, isDir: boolean) => call<string>('Files.Create', projectId, path, isDir),
+    Rename: (projectId: string, from: string, to: string) => call<void>('Files.Rename', projectId, from, to),
+    Delete: (projectId: string, path: string) => call<void>('Files.Delete', projectId, path),
+    Copy: (projectId: string, from: string, to: string) => call<void>('Files.Copy', projectId, from, to),
   },
   Git: {
     Status: (projectId: string) => call<RepoStatus>('Git.Status', projectId),

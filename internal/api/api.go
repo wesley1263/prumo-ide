@@ -567,6 +567,42 @@ func (f *Files) Write(projectID, path, content string, expectedMtime int64) (fil
 	return res, err
 }
 
+// Create cria um arquivo vazio ou uma pasta e devolve o caminho relativo criado.
+func (f *Files) Create(projectID, path string, isDir bool) (string, error) {
+	p, err := f.c.Files.Create(projectID, path, isDir)
+	if err == nil {
+		f.c.Bus.Emit(events.GitStatus, map[string]string{"projectId": projectID})
+	}
+	return p, err
+}
+
+// Rename renomeia ou move um arquivo ou pasta dentro do projeto, sem sobrescrever.
+func (f *Files) Rename(projectID, from, to string) error {
+	err := f.c.Files.Rename(projectID, from, to)
+	if err == nil {
+		f.c.Bus.Emit(events.GitStatus, map[string]string{"projectId": projectID})
+	}
+	return err
+}
+
+// Delete apaga um arquivo ou uma pasta inteira do projeto.
+func (f *Files) Delete(projectID, path string) error {
+	err := f.c.Files.Delete(projectID, path)
+	if err == nil {
+		f.c.Bus.Emit(events.GitStatus, map[string]string{"projectId": projectID})
+	}
+	return err
+}
+
+// Copy copia um arquivo ou pasta dentro do projeto, sem sobrescrever.
+func (f *Files) Copy(projectID, from, to string) error {
+	err := f.c.Files.Copy(projectID, from, to)
+	if err == nil {
+		f.c.Bus.Emit(events.GitStatus, map[string]string{"projectId": projectID})
+	}
+	return err
+}
+
 // ---------------------------------------------------------------- Git
 
 // Git: status, commit e diff.
