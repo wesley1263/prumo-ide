@@ -330,4 +330,13 @@ export const backend: Record<string, string> = {
   'o GitHub recusou (422)': 'GitHub refused (422)',
   'o GitHub recusou (422): {0}': 'GitHub refused (422): {0}',
   'o GitHub respondeu {0}': 'GitHub answered {0}',
+  // files: criar, renomear, apagar e copiar
+  'já existe um arquivo ou pasta com esse nome': 'a file or folder with that name already exists',
+  'nome inválido: {0}': 'invalid name: {0}',
+  'nome reservado: {0}': 'reserved name: {0}',
+  'operação não permitida na raiz do projeto': 'operation not allowed on the project root',
+  'a pasta .git não pode ser alterada por aqui': 'the .git folder cannot be changed from here',
+  'não dá para mover uma pasta para dentro dela mesma': 'cannot move a folder into itself',
+  'não dá para copiar uma pasta para dentro dela mesma': 'cannot copy a folder into itself',
+  'tipo de arquivo não suportado: {0}': 'unsupported file type: {0}',
 }

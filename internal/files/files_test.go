@@ -110,3 +110,69 @@ func TestReadExternalOnlyAllowedRoots(t *testing.T) {
 		}
 	}
 }
+
+func TestCreateRenameCopyDelete(t *testing.T) {
+	f, id, root := setup(t)
+	if _, err := f.Create(id, "pkg/a/x.go", false); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.Create(id, "pkg/a/x.go", false); err == nil {
+		t.Fatal("criar por cima deveria falhar")
+	}
+	if _, err := f.Create(id, "novo/dir", true); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.Create(id, "../fora.go", false); err == nil {
+		t.Fatal("criar fora do projeto deveria falhar")
+	}
+	if _, err := f.Create(id, ".git/hooks", true); err == nil {
+		t.Fatal(".git deveria ser protegido")
+	}
+	os.WriteFile(filepath.Join(root, "pkg/a/x.go"), []byte("package a"), 0o644)
+
+	if err := f.Rename(id, "pkg/a/x.go", "pkg/a/y.go"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "pkg/a/y.go")); err != nil {
+		t.Fatal("renomear não moveu")
+	}
+	if err := f.Rename(id, "pkg", "pkg/a/dentro"); err == nil {
+		t.Fatal("mover pasta para dentro de si deveria falhar")
+	}
+	if err := f.Rename(id, "pkg/a/y.go", "novo/dir/y.go"); err != nil {
+		t.Fatal(err)
+	}
+	if err := f.Copy(id, "novo/dir/y.go", "novo/dir/y.go"); err == nil {
+		t.Fatal("copiar por cima deveria falhar")
+	}
+	if err := f.Copy(id, "novo", "copia"); err != nil {
+		t.Fatal(err)
+	}
+	b, err := os.ReadFile(filepath.Join(root, "copia/dir/y.go"))
+	if err != nil || string(b) != "package a" {
+		t.Fatalf("cópia errada: %q %v", b, err)
+	}
+	if err := f.Rename(id, "copia", "novo"); err == nil {
+		t.Fatal("renomear por cima deveria falhar")
+	}
+	if err := f.Delete(id, "copia"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "copia")); err == nil {
+		t.Fatal("pasta não foi apagada")
+	}
+	if err := f.Delete(id, ""); err == nil {
+		t.Fatal("apagar a raiz deveria falhar")
+	}
+}
+
+func TestRenameCaseOnly(t *testing.T) {
+	f, id, root := setup(t)
+	os.WriteFile(filepath.Join(root, "foo.go"), nil, 0o644)
+	if err := f.Rename(id, "foo.go", "Foo.go"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(root, "Foo.go")); err != nil {
+		t.Fatal("renomear só a caixa falhou")
+	}
+}

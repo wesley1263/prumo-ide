@@ -58,6 +58,11 @@ interface DocsState {
   reloadFromDisk: () => Promise<void>
   resolveConflict: (keepMine: boolean) => Promise<void>
   markDirty: (key: string, dirty: boolean) => void
+  /**
+   * Larga os documentos de um arquivo ou pasta (antes de renomear ou apagar): grava o que estiver pendente
+   * (se save), fecha as abas e descarta os modelos. Devolve as abas de arquivo que estavam abertas, na ordem.
+   */
+  dropPaths: (path: string, save: boolean) => Promise<{ keys: string[]; active: string | null }>
 }
 
 const languageOf = (path: string): string => {
@@ -308,6 +313,31 @@ export const useDocs = create<DocsState>((set, get) => {
         const cur = get().docs[d.key]
         set({ docs: { ...get().docs, [d.key]: { ...cur, mtime: fc.mtime, savedVersion: model.getAlternativeVersionId(), dirty: false } } })
       }
+    },
+
+    dropPaths: async (path, save) => {
+      const under = (k: string) => k === path || k.startsWith(path + '/')
+      if (save) {
+        for (const d of Object.values(get().docs)) if (under(d.key) && d.dirty) await get().save(d.key, { format: false })
+      }
+      const keys = get().tabs.filter((t) => t.kind === 'file' && under(t.key)).map((t) => (t as { key: string }).key)
+      const wasActive = get().active
+      const active = wasActive && under(wasActive) ? wasActive : null
+      const tabs = get().tabs
+      const next = tabs.filter((t) => !(t.kind === 'file' ? under(t.key) : t.kind === 'diff' && under(t.path)))
+      let nowActive = wasActive
+      if (nowActive && !next.some((t) => tabKeyOf(t) === nowActive)) {
+        const neighbor = next[Math.min(Math.max(tabs.findIndex((t) => tabKeyOf(t) === wasActive), 0), next.length - 1)]
+        nowActive = neighbor ? tabKeyOf(neighbor) : null
+      }
+      const docs = { ...get().docs }
+      for (const k of Object.keys(docs)) {
+        if (!under(k)) continue
+        monaco.editor.getModel(monaco.Uri.parse(docs[k].uri))?.dispose()
+        delete docs[k]
+      }
+      set({ tabs: next, active: nowActive, docs })
+      return { keys, active }
     },
 
     resolveConflict: async (keepMine) => {
